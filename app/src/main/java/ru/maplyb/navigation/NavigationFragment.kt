@@ -9,20 +9,22 @@ import androidx.fragment.app.Fragment
 import org.maplibre.android.camera.CameraPosition
 import org.maplibre.android.geometry.LatLng
 import org.maplibre.android.maps.MapView
-import ru.maplyb.navigation.utli.log
+import ru.maplyb.navigation.gui.api.MaplybNavigationApi
 
 class NavigationFragment : Fragment(R.layout.navigation_fragment) {
 
     private lateinit var mapView: MapView
+    private var navigationLib : MaplybNavigationApi? = null
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        log("NavigationFragment onViewCreated")
         mapView = view.findViewById(R.id.mapView)
         mapView.getMapAsync { map ->
             map.setStyle("https://demotiles.maplibre.org/style.json")
             map.cameraPosition = CameraPosition.Builder().target(LatLng(0.0,0.0)).zoom(1.0).build()
         }
+        navigationLib = MaplybNavigationApi.create()
+        navigationLib?.init(requireActivity())
     }
     override fun onStart() {
         super.onStart()

@@ -5,15 +5,20 @@ import androidx.activity.ComponentActivity
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.fragment.NavHostFragment
 import org.maplibre.android.MapLibre
+import ru.maplyb.navigation.gui.api.MaplybNavigationApi
+import ru.maplyb.navigation.gui.api.NavigationLocationListener
+import ru.maplyb.navigation.gui.api.model.GeoPoint
 
 class MainActivity : AppCompatActivity(R.layout.activity_main) {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         MapLibre.getInstance(this)
+        val navigation = MaplybNavigationApi.create()
+        navigation.startRoute(GeoPoint(0.0,0.0,0.0),
+            NavigationLocationListener { startLocation, endLocation ->
 
-        val navHostFragment = supportFragmentManager
-            .findFragmentById(R.id.nav_host) as NavHostFragment
-
-        val navController = navHostFragment.navController
+            }
+        )
     }
 }
