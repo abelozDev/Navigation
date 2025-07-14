@@ -12,13 +12,6 @@ import ru.maplyb.navigation.gui.api.model.GeoPoint
 class MainActivity : AppCompatActivity(R.layout.activity_main) {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         MapLibre.getInstance(this)
-        val navigation = MaplybNavigationApi.create()
-        navigation.startRoute(GeoPoint(0.0,0.0,0.0),
-            NavigationLocationListener { startLocation, endLocation ->
-
-            }
-        )
     }
 }

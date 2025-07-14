@@ -11,7 +11,7 @@ import ru.maplyb.navigation.gui.impl.data.entity.StatisticEntity
 internal interface StatisticDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertStatistic(statisticEntity: StatisticEntity): Int
+    suspend fun insertStatistic(statisticEntity: StatisticEntity): Long
 
     @Query("SELECT * FROM StatisticEntity")
     fun getAllFlow(): Flow<List<StatisticEntity>>
@@ -20,7 +20,7 @@ internal interface StatisticDao {
     fun getAll(): List<StatisticEntity>
 
     @Query("SELECT * FROM StatisticEntity WHERE id = :id")
-    suspend fun getById(id: Int): StatisticEntity?
+    suspend fun getById(id: Long): StatisticEntity?
 
     @Query("SELECT * FROM StatisticEntity WHERE id = :id")
     fun getByIdFlow(id: Int): Flow<StatisticEntity?>

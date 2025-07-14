@@ -30,22 +30,22 @@ internal class MaplybNavigationApiImpl: MaplybNavigationApi {
 
     override fun startRoute(endPoint: GeoPoint, locationListener: NavigationLocationListener) {
         var startLocation: Location? = null
-        var currentStatistic: StatisticModel
         scope.launch {
-            currentStatistic = repository.createEmptyStatistic()
+            var currentStatistic: StatisticModel = repository.createEmptyStatistic()
+            locationManager
+                .init { location ->
+                    if (startLocation == null) startLocation = location
+                    locationListener.locationUpdated(
+                        startLocation = GeoPoint(
+                            latitude = location.latitude,
+                            longitude = location.longitude,
+                            altitude = location.altitude
+                        ),
+                        endLocation = endPoint
+                    )
+                }
+                .onFailure { log(it.message.toString()) }
         }
-        locationManager
-            .init { location ->
-                if (startLocation == null) startLocation = location
-                locationListener.locationUpdated(
-                    startLocation = GeoPoint(
-                        latitude = location.latitude,
-                        longitude = location.longitude,
-                        altitude = location.altitude
-                    ),
-                    endLocation = endPoint
-                )
-            }
-            .onFailure { log(it.message.toString()) }
+
     }
 }
