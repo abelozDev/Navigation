@@ -18,6 +18,8 @@ internal interface StatisticRepository {
 
     suspend fun checkStartRouteIsPossible(): Boolean
 
+    suspend fun getCurrentStatistic(): Flow<StatisticModel?>
+
     suspend fun createEmptyStatistic(): StatisticModel
 
     companion object {

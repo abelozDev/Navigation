@@ -6,6 +6,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import kotlinx.coroutines.flow.Flow
 import ru.maplyb.navigation.gui.impl.data.entity.StatisticEntity
+import ru.maplyb.navigation.gui.impl.domain.model.StatisticLifecycle
 
 @Dao
 internal interface StatisticDao {
@@ -18,6 +19,9 @@ internal interface StatisticDao {
 
     @Query("SELECT * FROM StatisticEntity")
     fun getAll(): List<StatisticEntity>
+
+    @Query("SELECT * FROM StatisticEntity WHERE lifecycle = :lifecycle")
+    fun getCurrentStatistic(lifecycle: StatisticLifecycle = StatisticLifecycle.CREATED): Flow<StatisticEntity?>
 
     @Query("SELECT * FROM StatisticEntity WHERE id = :id")
     suspend fun getById(id: Long): StatisticEntity?

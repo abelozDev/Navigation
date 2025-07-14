@@ -15,10 +15,8 @@ internal data class StatisticModel(
 
 internal enum class StatisticLifecycle {
     CREATED,
-    STARTED,
     PAUSED,
     IN_PROGRESS,
-    STOPPED,
     END;
 }
 

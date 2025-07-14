@@ -30,6 +30,10 @@ internal class StatisticRepositoryImpl(
         database.statisticDao().insertStatistic(statisticModel.toEntity())
     }
 
+    override suspend fun getCurrentStatistic(): Flow<StatisticModel?> {
+        return database.statisticDao().getCurrentStatistic().map { it?.toModel() }
+    }
+
     override suspend fun checkStartRouteIsPossible(): Boolean {
         val statistics = database.statisticDao().getAll()
         return statistics.isEmpty() || statistics.all { it.lifecycle == StatisticLifecycle.END }
