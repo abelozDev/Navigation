@@ -9,5 +9,16 @@ internal data class StatisticModel(
     val totalDistance: Meters,
     val averageSpeed: KmInHour,
     val currentSpeed: KmInHour,
+    val lifecycle: StatisticLifecycle = StatisticLifecycle.CREATED
 )
+
+
+internal enum class StatisticLifecycle {
+    CREATED,
+    STARTED,
+    PAUSED,
+    IN_PROGRESS,
+    STOPPED,
+    END;
+}
 

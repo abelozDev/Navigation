@@ -16,6 +16,8 @@ internal interface StatisticRepository {
 
     suspend fun deleteStatistic(statisticModel: StatisticModel)
 
+    suspend fun checkStartRouteIsPossible(): Boolean
+
     suspend fun createEmptyStatistic(): StatisticModel
 
     companion object {

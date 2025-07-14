@@ -15,7 +15,7 @@ import ru.maplyb.navigation.gui.impl.domain.repository.StatisticRepository
 import ru.maplyb.navigation.gui.impl.presentation.location.LibLocationManager
 import ru.maplyb.navigation.gui.impl.util.log
 
-internal class MaplybNavigationApiImpl: MaplybNavigationApi {
+internal object MaplybNavigationApiImpl: MaplybNavigationApi {
 
     private lateinit var application: Application
     private lateinit var locationManager: LibLocationManager
@@ -31,7 +31,9 @@ internal class MaplybNavigationApiImpl: MaplybNavigationApi {
     override fun startRoute(endPoint: GeoPoint, locationListener: NavigationLocationListener) {
         var startLocation: Location? = null
         scope.launch {
-            var currentStatistic: StatisticModel = repository.createEmptyStatistic()
+            val isCreatePossible = repository.checkStartRouteIsPossible()
+            if (!isCreatePossible) throw IllegalStateException("Route already started")
+            var newStatistic: StatisticModel = repository.createEmptyStatistic()
             locationManager
                 .init { location ->
                     if (startLocation == null) startLocation = location
@@ -46,6 +48,5 @@ internal class MaplybNavigationApiImpl: MaplybNavigationApi {
                 }
                 .onFailure { log(it.message.toString()) }
         }
-
     }
 }

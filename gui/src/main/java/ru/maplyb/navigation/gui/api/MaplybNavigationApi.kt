@@ -16,6 +16,6 @@ public interface MaplybNavigationApi {
     public fun startRoute(endPoint: GeoPoint, locationListener: NavigationLocationListener): Unit
 
     public companion object {
-        public fun create(): MaplybNavigationApi = MaplybNavigationApiImpl()
+        public fun create(): MaplybNavigationApi = MaplybNavigationApiImpl
     }
 }

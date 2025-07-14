@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.map
 import ru.maplyb.navigation.gui.impl.data.database.NavigationDatabase
 import ru.maplyb.navigation.gui.impl.data.entity.StatisticEntity
 import ru.maplyb.navigation.gui.impl.data.entity.toEntity
+import ru.maplyb.navigation.gui.impl.domain.model.StatisticLifecycle
 import ru.maplyb.navigation.gui.impl.domain.model.StatisticModel
 import ru.maplyb.navigation.gui.impl.domain.repository.StatisticRepository
 
@@ -27,6 +28,11 @@ internal class StatisticRepositoryImpl(
 
     override suspend fun insertStatistic(statisticModel: StatisticModel) {
         database.statisticDao().insertStatistic(statisticModel.toEntity())
+    }
+
+    override suspend fun checkStartRouteIsPossible(): Boolean {
+        val statistics = database.statisticDao().getAll()
+        return statistics.isEmpty() || statistics.all { it.lifecycle == StatisticLifecycle.END }
     }
 
     override suspend fun deleteStatistic(statisticModel: StatisticModel) {

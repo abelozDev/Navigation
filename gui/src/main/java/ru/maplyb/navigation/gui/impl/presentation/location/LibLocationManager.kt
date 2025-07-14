@@ -1,5 +1,6 @@
 package ru.maplyb.navigation.gui.impl.presentation.location
 
+import android.app.Application
 import android.content.Context
 import android.location.Location
 import android.location.LocationListener
@@ -9,7 +10,7 @@ import ru.maplyb.navigation.gui.impl.util.log
 import kotlin.math.log
 
 internal class LibLocationManager(
-    private val context: Context
+    private val context: Application
 ) {
     private val locationManager =
         context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
