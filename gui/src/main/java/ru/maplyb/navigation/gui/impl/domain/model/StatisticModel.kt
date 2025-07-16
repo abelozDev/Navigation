@@ -7,6 +7,9 @@ internal data class StatisticModel(
     val id: Int,
     val startTime: Long,
     val totalDistance: Meters,
+    val leftToDo: Meters = 0,
+    val lastPosition: Pair<Double, Double>?,
+    val endPoint: Pair<Double, Double>,
     val averageSpeed: KmInHour,
     val currentSpeed: KmInHour,
     val lifecycle: StatisticLifecycle = StatisticLifecycle.CREATED

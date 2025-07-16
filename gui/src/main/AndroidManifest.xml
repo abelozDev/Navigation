@@ -7,4 +7,13 @@
     <!-- Required only when requesting background location access on
          Android 10 (API level 29) and higher. -->
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION"/>
+    <application android:usesCleartextTraffic="true">
+        <service
+            android:name=".impl.service.NavigationService"
+            android:foregroundServiceType="location"
+            android:exported="false">
+        </service>
+    </application>
 </manifest>
