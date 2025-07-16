@@ -1,5 +1,6 @@
 package ru.maplyb.navigation.gui.impl.domain.model
 
+import ru.maplyb.navigation.gui.api.model.GeoPoint
 import ru.maplyb.navigation.gui.impl.data.entity.KmInHour
 import ru.maplyb.navigation.gui.impl.data.entity.Meters
 
@@ -20,10 +21,10 @@ internal data class StatisticModel(
     val startTime: Long,
     val totalDistance: Meters,
     val leftToDo: Meters = 0,
-    val lastPosition: Pair<Double, Double>?,
-    val endPoint: Pair<Double, Double>,
+    val lastPosition: GeoPoint?,
+    val endPoint: GeoPoint,
     val averageSpeed: KmInHour,
-    val startPosition: Pair<Double, Double>?,
+    val startPosition: GeoPoint?,
     val currentSpeed: KmInHour,
     val lifecycle: StatisticLifecycle = StatisticLifecycle.CREATED
 )

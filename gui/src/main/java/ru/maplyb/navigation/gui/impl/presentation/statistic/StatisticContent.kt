@@ -8,12 +8,11 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableDoubleStateOf
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -21,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 import ru.maplyb.navigation.gui.impl.domain.model.StatisticModel
+import ru.maplyb.navigation.gui.impl.util.calculateAzimuth
 import kotlin.text.toDouble
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -55,6 +55,9 @@ private fun HaveStatistic(
     var averageSpeed by remember() {
         mutableDoubleStateOf(0.0)
     }
+    var azimuth by remember() {
+        mutableIntStateOf(0)
+    }
     LaunchedEffect(statistic.startTime, statistic.leftToDo) {
         while (true) {
             delay(1000)
@@ -65,6 +68,11 @@ private fun HaveStatistic(
             val hours = durationMillis.toDouble() / (1000 * 60 * 60)
             averageSpeed = String.format("%.1f", (statistic.leftToDo / 1000) / hours).toDouble()
         }
+    }
+    LaunchedEffect(statistic.lastPosition) {
+        azimuth = statistic.lastPosition?.let {
+            calculateAzimuth(it, statistic.endPoint)
+        } ?: 0
     }
     Column {
         Text(
@@ -79,6 +87,11 @@ private fun HaveStatistic(
         Spacer(Modifier.height(8.dp))
         Text(
             text = "Средняя скорость :${averageSpeed} км/ч",
+            fontSize = 24.sp
+        )
+        Spacer(Modifier.height(8.dp))
+        Text(
+            text = "Азимут: $azimuth°",
             fontSize = 24.sp
         )
         Spacer(Modifier.height(16.dp))

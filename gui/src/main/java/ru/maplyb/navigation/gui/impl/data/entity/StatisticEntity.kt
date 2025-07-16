@@ -46,12 +46,12 @@ internal data class StatisticEntity(
             startTime = startTime,
             totalDistance = totalDistance,
             leftToDo = leftToDo,
-            lastPosition = lastPosition?.let { lastPosition.latitude to lastPosition.longitude },
-            endPoint = endPoint.latitude to endPoint.longitude,
+            lastPosition = lastPosition,
+            endPoint = endPoint,
             averageSpeed = averageSpeed,
             currentSpeed = currentSpeed,
             lifecycle = lifecycle,
-            startPosition = startPosition?.let { startPosition.latitude to startPosition.longitude }
+            startPosition = startPosition
         )
     }
 }
@@ -60,26 +60,10 @@ internal fun StatisticModel.toEntity(): StatisticEntity = StatisticEntity(
     id = id,
     startTime = startTime,
     leftToDo = leftToDo,
-    lastPosition = lastPosition?.let {
-        GeoPoint(
-            lastPosition.first,
-            lastPosition.second,
-            0.0
-        )
-    },
-    endPoint = GeoPoint(
-        endPoint.first,
-        endPoint.second,
-        0.0
-    ),
+    lastPosition = lastPosition,
+    endPoint = endPoint,
     currentSpeed = currentSpeed,
     lifecycle = lifecycle,
-    startPosition = startPosition?.let {
-        GeoPoint(
-            startPosition.first,
-            startPosition.second,
-            0.0
-        )
-    }
+    startPosition = startPosition
 )
 
