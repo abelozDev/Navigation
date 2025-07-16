@@ -50,11 +50,15 @@ internal class StatisticRepositoryImpl(
         database.statisticDao().deleteStatisticById(statisticModel.id)
     }
 
-    override suspend fun createEmptyStatistic(currentPosition: GeoPoint?, endPosition: GeoPoint): StatisticModel {
+    override suspend fun createEmptyStatistic(
+        currentPosition: GeoPoint?,
+        endPosition: GeoPoint
+    ): StatisticModel {
         val statistic = StatisticEntity(
             lastPosition = currentPosition,
             startTime = System.currentTimeMillis(),
             endPoint = endPosition,
+            startPosition = currentPosition
         )
         return insertAndGet(statistic).toModel()
     }
@@ -77,7 +81,10 @@ internal class StatisticRepositoryImpl(
                 lastPosition = geoPoint
             )
         } else {
-            statistic.copy(lastPosition = geoPoint)
+            statistic.copy(
+                startPosition = statistic.startPosition ?: geoPoint,
+                lastPosition = geoPoint
+            )
         }
         database.statisticDao().updateStatistic(newStatistic)
         saveRoutePoint(statisticId, geoPoint)

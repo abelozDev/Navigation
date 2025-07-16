@@ -10,43 +10,88 @@ import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableDoubleStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.delay
 import ru.maplyb.navigation.gui.impl.domain.model.StatisticModel
+import kotlin.text.toDouble
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun StatisticContent(
-    sheetState : SheetState,
+    sheetState: SheetState,
     statistic: StatisticModel?,
     onDismissRequest: () -> Unit,
     clear: () -> Unit
 ) {
+
     ModalBottomSheet(
         onDismissRequest = onDismissRequest,
         sheetState = sheetState
     ) {
-        Column {
-            val text = if (statistic == null) "Статистика пуста" else "Пройдено: ${statistic.leftToDo}"
+        if (statistic != null) {
+            HaveStatistic(statistic, clear)
+        } else {
             Text(
-                text = text,
-                fontSize = 48.sp
+                text = "Статистика пуста",
+                fontSize = 24.sp
             )
-            Spacer(Modifier.height(16.dp))
-            if (statistic != null) {
-                Button(
-                    onClick = {
-                        clear()
-                    },
-                    content = {
-                        Text(
-                            text = "Очистить",
-                            fontSize = 24.sp
-                        )
-                    }
+        }
+    }
+}
+
+@Composable
+private fun HaveStatistic(
+    statistic: StatisticModel,
+    clear: () -> Unit
+) {
+    var averageSpeed by remember() {
+        mutableDoubleStateOf(0.0)
+    }
+    LaunchedEffect(statistic.startTime, statistic.leftToDo) {
+        while (true) {
+            delay(1000)
+
+            val currentTime = System.currentTimeMillis()
+
+            val durationMillis = currentTime - statistic.startTime
+            val hours = durationMillis.toDouble() / (1000 * 60 * 60)
+            averageSpeed = String.format("%.1f", (statistic.leftToDo / 1000) / hours).toDouble()
+        }
+    }
+    Column {
+        Text(
+            text = "Пройдено: ${statistic.leftToDo} м",
+            fontSize = 24.sp
+        )
+        Spacer(Modifier.height(8.dp))
+        Text(
+            text = "Осталось идти :${statistic.totalDistance} м",
+            fontSize = 24.sp
+        )
+        Spacer(Modifier.height(8.dp))
+        Text(
+            text = "Средняя скорость :${averageSpeed} км/ч",
+            fontSize = 24.sp
+        )
+        Spacer(Modifier.height(16.dp))
+        Button(
+            onClick = {
+                clear()
+            },
+            content = {
+                Text(
+                    text = "Очистить",
+                    fontSize = 24.sp
                 )
             }
-        }
+        )
     }
 }
