@@ -19,9 +19,11 @@ import androidx.compose.runtime.setValue
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import ru.maplyb.navigation.gui.api.MaplybNavigationApi
 import ru.maplyb.navigation.gui.api.NavigationLocationListener
 import ru.maplyb.navigation.gui.api.model.GeoPoint
@@ -109,21 +111,36 @@ internal object MaplybNavigationApiImpl : MaplybNavigationApi {
                     scope.launch {
                         repository.clear()
                     }
+                },
+                pause = {
+                    //не может быть null
+                    currentStatistic?.let {
+                        scope.launch {
+                            repository.pause(it.id)
+                        }
+                    }
+
                 }
             )
         }
     }
 
     override fun startRoute(endPoint: GeoPoint, locationListener: NavigationLocationListener) {
-        NotificationChannel.create(application)
-        val intent = Intent(application, NavigationService::class.java).run {
-            putExtra(NavigationService.NAVIGATION_END_POINT, StartRouteArgs(endPoint))
+        scope.launch {
+            val isPossible = repository.getCurrentStatistic().first() == null
+            if (isPossible) {
+                withContext(Dispatchers.Main) {
+                    NotificationChannel.create(application)
+                    val intent = Intent(application, NavigationService::class.java).run {
+                        putExtra(NavigationService.NAVIGATION_END_POINT, StartRouteArgs(endPoint))
+                    }
+                    application.startService(intent)
+                    if (!mBound) {
+                        application.bindService(intent, connection, Context.BIND_AUTO_CREATE)
+                    }
+                    this@MaplybNavigationApiImpl.locationListener = locationListener
+                }
+            }
         }
-        application.startService(intent)
-        if (!mBound) {
-            application.bindService(intent, connection, Context.BIND_AUTO_CREATE)
-        }
-        this.locationListener = locationListener
-
     }
 }

@@ -1,7 +1,9 @@
 package ru.maplyb.navigation.gui.impl.presentation.statistic
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -29,15 +31,15 @@ internal fun StatisticContent(
     sheetState: SheetState,
     statistic: StatisticModel?,
     onDismissRequest: () -> Unit,
-    clear: () -> Unit
+    clear: () -> Unit,
+    pause: () -> Unit
 ) {
-
     ModalBottomSheet(
         onDismissRequest = onDismissRequest,
         sheetState = sheetState
     ) {
         if (statistic != null) {
-            HaveStatistic(statistic, clear)
+            HaveStatistic(statistic, clear, pause)
         } else {
             Text(
                 text = "Статистика пуста",
@@ -50,7 +52,8 @@ internal fun StatisticContent(
 @Composable
 private fun HaveStatistic(
     statistic: StatisticModel,
-    clear: () -> Unit
+    clear: () -> Unit,
+    pause: () -> Unit
 ) {
     var averageSpeed by remember() {
         mutableDoubleStateOf(0.0)
@@ -95,16 +98,33 @@ private fun HaveStatistic(
             fontSize = 24.sp
         )
         Spacer(Modifier.height(16.dp))
-        Button(
-            onClick = {
-                clear()
-            },
-            content = {
-                Text(
-                    text = "Очистить",
-                    fontSize = 24.sp
-                )
-            }
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Button(
+                modifier = Modifier.weight(1f),
+                onClick = {
+                    clear()
+                },
+                content = {
+                    Text(
+                        text = "Очистить",
+                        fontSize = 24.sp
+                    )
+                }
+            )
+            Button(
+                modifier = Modifier.weight(1f),
+                onClick = {
+                    pause()
+                },
+                content = {
+                    Text(
+                        text = "Пауза",
+                        fontSize = 24.sp
+                    )
+                }
+            )
+        }
     }
 }

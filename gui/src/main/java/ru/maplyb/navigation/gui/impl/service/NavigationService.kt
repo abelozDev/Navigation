@@ -9,6 +9,7 @@ import androidx.core.app.NotificationCompat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import ru.maplyb.navigation.gui.api.NavigationLocationListener
@@ -75,6 +76,8 @@ internal class NavigationService() : Service() {
                 locationManager
                     .init()
                     .collect { location ->
+                        ensureActive()
+                        println("location altitude: ${location.altitude}")
                         repository.updateLastPosition(newStatisticId, location.toGeoPoint())
                         locationListener?.locationUpdated(
                             startLocation = GeoPoint(

@@ -9,6 +9,7 @@ import ru.maplyb.navigation.gui.impl.domain.model.StatisticModel
 
 internal interface StatisticRepository {
 
+    suspend fun pause(statisticId: Int)
     suspend fun clear()
     fun getStatisticsFlow(): Flow<List<StatisticModel>>
 
@@ -21,7 +22,7 @@ internal interface StatisticRepository {
 
     suspend fun checkStartRouteIsPossible(): Boolean
 
-    suspend fun getCurrentStatistic(): Flow<StatisticModel?>
+    fun getCurrentStatistic(): Flow<StatisticModel?>
 
     suspend fun createEmptyStatistic(currentPosition: GeoPoint?, endPosition: GeoPoint): StatisticModel
 

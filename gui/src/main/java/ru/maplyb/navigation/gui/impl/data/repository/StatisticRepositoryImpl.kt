@@ -25,6 +25,15 @@ internal class StatisticRepositoryImpl(
         }
     }
 
+    override suspend fun pause(statisticId: Int) {
+        database.statisticDao().getById(statisticId.toLong())?.let {
+            database.statisticDao().updateStatistic(
+                it.copy(
+                    lifecycle = StatisticLifecycle.PAUSED
+                )
+            )
+        }
+    }
     override suspend fun clear() {
         database.statisticDao().clear()
     }
@@ -37,7 +46,7 @@ internal class StatisticRepositoryImpl(
         database.statisticDao().insertStatistic(statisticModel.toEntity())
     }
 
-    override suspend fun getCurrentStatistic(): Flow<StatisticModel?> {
+    override fun getCurrentStatistic(): Flow<StatisticModel?> {
         return database.statisticDao().getCurrentStatistic().map { it?.toModel() }
     }
 
@@ -66,8 +75,9 @@ internal class StatisticRepositoryImpl(
     @Transaction
     override suspend fun updateLastPosition(statisticId: Int, geoPoint: GeoPoint) {
         val statistic = database.statisticDao().getById(statisticId.toLong())
-
-        check(statistic != null) { "statistic with id = $statisticId is null" }
+        /**Может быть null если удалили статистику, но пришла геолокация*/
+        if (statistic == null) return
+        if (statistic.lifecycle != StatisticLifecycle.CREATED) return
 
         val newStatistic = if (statistic.lastPosition != null) {
             val distanceInMeters = distanceInMeters(
