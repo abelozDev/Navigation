@@ -16,6 +16,7 @@ internal typealias KmInHour = Double
  * @param startPosition координата начала пути
  * @param leftToDo пройдено
  * @param lastPosition последняя известная позиция
+ * @param lastPointTimestamp время последней известной позиции
  * @param endPoint конечная точка
  * @param currentSpeed текущая скорость
  * @param lifecycle жизненный цикл
@@ -28,6 +29,7 @@ internal data class StatisticEntity(
     val startPosition: GeoPoint?,
     val leftToDo: Meters = 0,
     val lastPosition: GeoPoint?,
+    val lastPointTimestamp: Long? = null,
     val endPoint: GeoPoint,
     val currentSpeed: KmInHour = 0.0,
     val lifecycle: StatisticLifecycle = StatisticLifecycle.CREATED
@@ -53,6 +55,14 @@ internal data class StatisticEntity(
             lifecycle = lifecycle,
             startPosition = startPosition
         )
+    }
+
+    companion object {
+        /*М*/
+        const val MIN_DISTANCE = 5
+        /*Км/Ч*/
+        const val MAX_PAUSE_SPEED = 1.8f
+
     }
 }
 

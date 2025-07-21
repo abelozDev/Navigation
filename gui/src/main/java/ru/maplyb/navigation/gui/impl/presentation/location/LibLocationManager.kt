@@ -7,6 +7,7 @@ import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
+import android.location.LocationRequest
 import androidx.annotation.RequiresPermission
 import androidx.compose.foundation.text.selection.DisableSelection
 import androidx.core.app.ActivityCompat
@@ -74,8 +75,9 @@ private object LibLocationManagerImpl : LibLocationManager {
         }
         val currentProvider = provider ?: throw IllegalStateException("Location provider not found")
         if (!PermissionHelper().checkLocationPermission(application)) throw IllegalStateException("Location permission not granted")
+
         locationManager.requestLocationUpdates(
-            currentProvider, 1_000, 10f, onLocationUpdated,
+            currentProvider, 2_000, 0f, onLocationUpdated,
             null
         )
         awaitClose {

@@ -5,15 +5,18 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import ru.maplyb.navigation.gui.impl.data.converters.GeoPointConverter
 import ru.maplyb.navigation.gui.impl.data.converters.LifecycleConverter
+import ru.maplyb.navigation.gui.impl.data.dao.PauseDao
 import ru.maplyb.navigation.gui.impl.data.dao.RoutePointsDao
 import ru.maplyb.navigation.gui.impl.data.dao.StatisticDao
+import ru.maplyb.navigation.gui.impl.data.entity.PauseEntity
 import ru.maplyb.navigation.gui.impl.data.entity.RoutePointEntity
 import ru.maplyb.navigation.gui.impl.data.entity.StatisticEntity
 
 @Database(
     entities = [
         StatisticEntity::class,
-        RoutePointEntity::class
+        RoutePointEntity::class,
+        PauseEntity::class
     ],
     version = 1
 )
@@ -21,4 +24,5 @@ import ru.maplyb.navigation.gui.impl.data.entity.StatisticEntity
 internal abstract class NavigationDatabase : RoomDatabase() {
     abstract fun statisticDao(): StatisticDao
     abstract fun routePointsDao(): RoutePointsDao
+    abstract fun pauseDao(): PauseDao
 }

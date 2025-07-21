@@ -5,9 +5,12 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import ru.maplyb.navigation.gui.api.model.GeoPoint
 import ru.maplyb.navigation.gui.impl.data.database.NavigationDatabase
+import ru.maplyb.navigation.gui.impl.data.entity.Meters
+import ru.maplyb.navigation.gui.impl.data.entity.PauseEntity
 import ru.maplyb.navigation.gui.impl.data.entity.RoutePointEntity
 import ru.maplyb.navigation.gui.impl.data.entity.StatisticEntity
 import ru.maplyb.navigation.gui.impl.data.entity.toEntity
+import ru.maplyb.navigation.gui.impl.data.model.PositionDataModel
 import ru.maplyb.navigation.gui.impl.domain.model.StatisticLifecycle
 import ru.maplyb.navigation.gui.impl.domain.model.StatisticModel
 import ru.maplyb.navigation.gui.impl.domain.repository.StatisticRepository
@@ -34,6 +37,7 @@ internal class StatisticRepositoryImpl(
             )
         }
     }
+
     override suspend fun clear() {
         database.statisticDao().clear()
     }
@@ -77,8 +81,8 @@ internal class StatisticRepositoryImpl(
         val statistic = database.statisticDao().getById(statisticId.toLong())
         /**Может быть null если удалили статистику, но пришла геолокация*/
         if (statistic == null) return
-        if (statistic.lifecycle != StatisticLifecycle.CREATED) return
-
+        val timestamp = System.currentTimeMillis()
+        var isPaused = false
         val newStatistic = if (statistic.lastPosition != null) {
             val distanceInMeters = distanceInMeters(
                 lat1 = statistic.lastPosition.latitude,
@@ -86,28 +90,58 @@ internal class StatisticRepositoryImpl(
                 lat2 = geoPoint.latitude,
                 lon2 = geoPoint.longitude
             )
+            isPaused = checkPause(statistic, geoPoint, timestamp, distanceInMeters)
+            val lifecycle = if (isPaused) StatisticLifecycle.PAUSED else StatisticLifecycle.CREATED
             statistic.copy(
-                leftToDo = statistic.leftToDo + distanceInMeters,
-                lastPosition = geoPoint
+                lifecycle = lifecycle,
+                leftToDo = if (isPaused) statistic.leftToDo else statistic.leftToDo + distanceInMeters,
+                lastPosition = geoPoint,
+                lastPointTimestamp = timestamp
             )
         } else {
             statistic.copy(
                 startPosition = statistic.startPosition ?: geoPoint,
-                lastPosition = geoPoint
+                lastPosition = geoPoint,
+                lastPointTimestamp = timestamp
             )
         }
         database.statisticDao().updateStatistic(newStatistic)
-        saveRoutePoint(statisticId, geoPoint)
+        if (isPaused) {
+            savePausePoint(statisticId, geoPoint, timestamp)
+        } else {
+            saveRoutePoint(statisticId, geoPoint, timestamp)
+        }
     }
 
-    private suspend fun saveRoutePoint(statisticId: Int, point: GeoPoint) {
-        val timestamp = System.currentTimeMillis()
+    private suspend fun savePausePoint(statisticId: Int, point: GeoPoint, timestamp: Long) {
+        val entity = PauseEntity(
+            point = point,
+            timestamp = timestamp,
+            statisticId = statisticId
+        )
+        database.pauseDao().insertPause(entity)
+    }
+
+    private suspend fun saveRoutePoint(statisticId: Int, point: GeoPoint, timestamp: Long) {
         val entity = RoutePointEntity(
             statisticId = statisticId,
             point = point,
             timestamp = timestamp
         )
         database.routePointsDao().insert(entity)
+    }
+
+    /**Если паузы еще нет. Нужна логика если уже пауза*/
+    private fun checkPause(
+        statistic: StatisticEntity,
+        geoPoint: GeoPoint,
+        timestamp: Long,
+        distanceBetween: Meters
+    ): Boolean {
+        if (statistic.lastPosition == null || statistic.lastPointTimestamp == null) return false
+        val timeBetweenPoints = timestamp - statistic.lastPointTimestamp
+        val speedKmh = (distanceBetween / (timeBetweenPoints * 0.001)) / 3.6
+        return speedKmh < StatisticEntity.MAX_PAUSE_SPEED
     }
 
     @Transaction
