@@ -34,7 +34,7 @@ internal data class StatisticEntity(
     val currentSpeed: KmInHour = 0.0,
     val lifecycle: StatisticLifecycle = StatisticLifecycle.CREATED
 ) {
-    fun toModel(): StatisticModel {
+    fun toModel(travelTime: Long): StatisticModel {
         val currentTime = System.currentTimeMillis()
 
         val durationMillis = currentTime - startTime
@@ -53,7 +53,8 @@ internal data class StatisticEntity(
             averageSpeed = averageSpeed,
             currentSpeed = currentSpeed,
             lifecycle = lifecycle,
-            startPosition = startPosition
+            startPosition = startPosition,
+            travelTime = travelTime
         )
     }
 

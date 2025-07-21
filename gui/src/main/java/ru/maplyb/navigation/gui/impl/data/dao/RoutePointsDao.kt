@@ -21,12 +21,15 @@ internal interface RoutePointsDao {
     fun getRoutePointsFlow(statisticId: Int): Flow<List<RoutePointEntity>>
 
     @Query("SELECT * FROM RoutePointEntity WHERE statisticId = :statisticId ORDER BY timestamp DESC LIMIT 1")
-    suspend fun getLastRoutePoint(statisticId: Int): PauseEntity?
+    suspend fun getLastRoutePoint(statisticId: Int): RoutePointEntity?
 
     @Query("DELETE FROM RoutePointEntity WHERE statisticId = :statisticId")
     suspend fun deleteRoutePoints(statisticId: Int)
 
     @Query("DELETE FROM RoutePointEntity")
     suspend fun clear()
+
+    @Query("SELECT * FROM RoutePointEntity")
+    fun getAllRoutePointsFlow(): Flow<List<RoutePointEntity>>
 
 }

@@ -19,4 +19,7 @@ internal interface PauseDao {
 
     @Query("SELECT * FROM PauseEntity WHERE statisticId = :statisticId ORDER BY timestamp DESC LIMIT 1")
     suspend fun getLastPausePoint(statisticId: Int): PauseEntity?
+
+    @Query("SELECT * FROM PauseEntity")
+    fun getAllPausesFlow(): Flow<List<PauseEntity>>
 }

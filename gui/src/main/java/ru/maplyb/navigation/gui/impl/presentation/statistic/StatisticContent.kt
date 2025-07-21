@@ -84,6 +84,11 @@ private fun HaveStatistic(
         )
         Spacer(Modifier.height(8.dp))
         Text(
+            text = "Время в пути ${statistic.travelTime}}",
+            fontSize = 24.sp
+        )
+        Spacer(Modifier.height(8.dp))
+        Text(
             text = "Осталось идти :${statistic.totalDistance} м",
             fontSize = 24.sp
         )

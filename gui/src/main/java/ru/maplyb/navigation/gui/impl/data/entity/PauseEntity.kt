@@ -21,4 +21,5 @@ internal data class PauseEntity(
     val point: GeoPoint,
     val timestamp: Long,
     val statisticId: Int,
+    val pauseNumber: Int
 )

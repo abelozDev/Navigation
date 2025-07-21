@@ -10,6 +10,7 @@ import ru.maplyb.navigation.gui.impl.data.entity.Meters
  * @param leftToDo пройдено
  * @param lastPosition последняя известная позиция
  * @param endPoint конечная точка
+ * @param travelTime время в пути
  * @param averageSpeed средняя скорость
  * @param startPosition начальная позиция
  * @param currentSpeed текущая скорость
@@ -23,6 +24,7 @@ internal data class StatisticModel(
     val leftToDo: Meters = 0,
     val lastPosition: GeoPoint?,
     val endPoint: GeoPoint,
+    val travelTime: Long,
     val averageSpeed: KmInHour,
     val startPosition: GeoPoint?,
     val currentSpeed: KmInHour,
