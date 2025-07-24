@@ -52,7 +52,7 @@ internal class StatisticRepositoryImpl(
         return combine(
             database.statisticDao().getByIdFlow(id),
             database.pauseDao().getPausesByStatistic(id),
-            ) {  statistic, pauses ->
+        ) { statistic, pauses ->
             val timestamp = System.currentTimeMillis()
             val travelTime = pauses
                 .groupBy { it.pauseNumber }
@@ -79,29 +79,29 @@ internal class StatisticRepositoryImpl(
     }
 
     override fun getCurrentStatistic(): Flow<StatisticModel?> {
-        return combine(
-            database.statisticDao().getCurrentStatistic(),
-            database.pauseDao().getAllPausesFlow(),
-            ) { statistic, pauses ->
-            val timestamp = System.currentTimeMillis()
-            val travelTime = pauses
-                .filter { it.statisticId == statistic?.id }
-                .groupBy { it.pauseNumber }
-                .map {
-                    val sorted = it.value.sortedBy { value -> value.timestamp }
-                    val first = sorted.firstOrNull()?.timestamp ?: 0
-                    val last = sorted.lastOrNull()?.timestamp ?: 0
-                    println("first: $first")
-                    println("last: $last")
-                    last - first
-                }
-                .sum()
-                .let { allPausesTime ->
-                    if (statistic?.startTime == null) return@let 0
-                    timestamp - statistic.startTime - allPausesTime
-                }
-            statistic?.toModel(travelTime)
-        }
+        return database.statisticDao().getCurrentStatisticWithPoints()
+            .map { statWithPoints ->
+                if (statWithPoints == null) return@map null
+                val statistic = statWithPoints.statistic
+                val pauses = statWithPoints.pauses
+                val timestamp = System.currentTimeMillis()
+                val travelTime = pauses
+                    .groupBy { it.pauseNumber }
+                    .map {
+                        val sorted = it.value.sortedBy { value -> value.timestamp }
+                        val first = sorted.firstOrNull()?.timestamp ?: 0
+                        val last = sorted.lastOrNull()?.timestamp ?: 0
+                        println("first: $first")
+                        println("last: $last")
+                        last - first
+                    }
+                    .sum()
+                    .let { allPausesTime ->
+                        timestamp - statistic.startTime - allPausesTime
+                    }
+                statistic.toModel(travelTime)
+            }
+
     }
 
     override suspend fun checkStartRouteIsPossible(): Boolean {
@@ -180,13 +180,18 @@ internal class StatisticRepositoryImpl(
         }
         if (isPaused) {
             savePausePoint(
-                statisticId,
-                geoPoint,
-                timestamp,
+                statisticId = statisticId,
+                point = geoPoint,
+                timestamp = timestamp,
                 statisticLifecycle = statistic.lifecycle
             )
         } else {
-            saveRoutePoint(statisticId, geoPoint, timestamp)
+            saveRoutePoint(
+                statisticId = statisticId,
+                point = geoPoint,
+                timestamp = timestamp,
+                statisticLifecycle = statistic.lifecycle
+            )
         }
         database.statisticDao().updateStatistic(newStatistic)
     }
@@ -212,11 +217,23 @@ internal class StatisticRepositoryImpl(
         database.pauseDao().insertPause(entity)
     }
 
-    private suspend fun saveRoutePoint(statisticId: Int, point: GeoPoint, timestamp: Long) {
+    private suspend fun saveRoutePoint(
+        statisticId: Int,
+        point: GeoPoint,
+        timestamp: Long,
+        statisticLifecycle: StatisticLifecycle
+    ) {
+        val lastRouteNumber = database.routePointsDao().getLastRouteNumber(statisticId)
+        val pauseNumber = when {
+            lastRouteNumber == null -> 1
+            statisticLifecycle == StatisticLifecycle.PAUSED -> lastRouteNumber.routeNumber
+            else -> lastRouteNumber.routeNumber + 1
+        }
         val entity = RoutePointEntity(
             statisticId = statisticId,
             point = point,
-            timestamp = timestamp
+            timestamp = timestamp,
+            routeNumber = pauseNumber
         )
         database.routePointsDao().insert(entity)
     }

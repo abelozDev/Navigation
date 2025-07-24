@@ -35,11 +35,9 @@ internal data class StatisticEntity(
     val lifecycle: StatisticLifecycle = StatisticLifecycle.CREATED
 ) {
     fun toModel(travelTime: Long): StatisticModel {
-        val currentTime = System.currentTimeMillis()
 
-        val durationMillis = currentTime - startTime
-        val hours = durationMillis.toDouble() / (1000 * 60 * 60)
-        val averageSpeed = String.format("%.1f", (leftToDo / 1000) / hours).toDouble()
+        val hours = travelTime.toDouble() / (1000 * 60 * 60)
+        val averageSpeed = String.format("%.1f", (leftToDo / 1000.0) / hours).toDouble()
 
         val totalDistance = lastPosition?.let { distanceInMeters(it, endPoint) } ?: 0
 

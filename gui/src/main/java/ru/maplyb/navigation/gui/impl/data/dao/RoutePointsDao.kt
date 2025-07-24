@@ -23,6 +23,9 @@ internal interface RoutePointsDao {
     @Query("SELECT * FROM RoutePointEntity WHERE statisticId = :statisticId ORDER BY timestamp DESC LIMIT 1")
     suspend fun getLastRoutePoint(statisticId: Int): RoutePointEntity?
 
+    @Query("SELECT * FROM RoutePointEntity WHERE statisticId = :statisticId ORDER BY timestamp DESC LIMIT 1")
+    suspend fun getLastRouteNumber(statisticId: Int): RoutePointEntity?
+
     @Query("DELETE FROM RoutePointEntity WHERE statisticId = :statisticId")
     suspend fun deleteRoutePoints(statisticId: Int)
 

@@ -129,13 +129,16 @@ internal fun RouteStatsBottomSheet(
         } ?: 0
     }
     val distancePassed by remember(statistic.leftToDo) {
-        mutableStateOf("${statistic.leftToDo/1000.0}")
+        mutableStateOf(formatDistance(statistic.leftToDo))
     }
     val timeElapsed by remember(statistic.travelTime) {
         mutableStateOf(formatMillisecondsTime(statistic.travelTime))
     }
     val distanceRemaining by remember(statistic.totalDistance) {
         mutableStateOf(formatDistance(statistic.totalDistance))
+    }
+    val averageSpeed by remember(statistic.averageSpeed) {
+        mutableStateOf("${statistic.averageSpeed}км/ч")
     }
     Column(
         modifier = Modifier
@@ -159,7 +162,7 @@ internal fun RouteStatsBottomSheet(
         StatsRow(label = "Время в пути", value = timeElapsed)
         StatsRow(label = "Осталось идти", value = distanceRemaining)
         //todo средняя скорость
-        StatsRow(label = "Средняя скорость", value = "0.0")
+        StatsRow(label = "Средняя скорость", value = averageSpeed )
         StatsRow(label = "Азимут", value = "${azimuth}°")
 
         Divider(modifier = Modifier.padding(top = 8.dp))

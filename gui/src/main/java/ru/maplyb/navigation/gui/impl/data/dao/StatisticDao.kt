@@ -4,10 +4,12 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
 import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
 import ru.maplyb.navigation.gui.api.model.GeoPoint
 import ru.maplyb.navigation.gui.impl.data.entity.StatisticEntity
+import ru.maplyb.navigation.gui.impl.data.entity.StatisticWithPoints
 import ru.maplyb.navigation.gui.impl.domain.model.StatisticLifecycle
 
 @Dao
@@ -27,6 +29,12 @@ internal interface StatisticDao {
 
     @Query("SELECT * FROM StatisticEntity WHERE lifecycle != :lifecycle")
     fun getCurrentStatistic(lifecycle: StatisticLifecycle = StatisticLifecycle.END): Flow<StatisticEntity?>
+
+    @Transaction
+    @Query("SELECT * FROM StatisticEntity WHERE lifecycle != :lifecycle LIMIT 1")
+    fun getCurrentStatisticWithPoints(
+        lifecycle: StatisticLifecycle = StatisticLifecycle.END
+    ): Flow<StatisticWithPoints?>
 
     @Query("SELECT * FROM StatisticEntity WHERE id = :id")
     suspend fun getById(id: Long): StatisticEntity?

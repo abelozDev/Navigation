@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
     id("com.google.devtools.ksp") version "2.2.0-2.0.2"
+    id("maven-publish")
     alias(libs.plugins.kotlin.compose)
     kotlin("plugin.serialization") version "2.0.20"
 }
@@ -40,7 +41,18 @@ android {
         compose = true
     }
 }
-
+publishing {
+    publications {
+        register<MavenPublication>("release") {
+            afterEvaluate {
+                from(components["release"])
+                groupId = "com.github.abelozDev"
+                artifactId = "gui"
+                version = libs.versions.lib.version
+            }
+        }
+    }
+}
 dependencies {
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.gson)

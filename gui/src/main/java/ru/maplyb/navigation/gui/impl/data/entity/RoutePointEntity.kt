@@ -20,5 +20,6 @@ internal data class RoutePointEntity(
     val id: Int? = null,
     val statisticId: Int,
     val point: GeoPoint,
-    val timestamp: Long
+    val timestamp: Long,
+    val routeNumber: Int
 )
