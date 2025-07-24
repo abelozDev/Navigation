@@ -4,6 +4,7 @@ import android.content.Context
 import kotlinx.coroutines.flow.Flow
 import ru.maplyb.navigation.gui.api.model.GeoPoint
 import ru.maplyb.navigation.gui.impl.data.database.Database
+import ru.maplyb.navigation.gui.impl.data.model.PositionDataModel
 import ru.maplyb.navigation.gui.impl.data.repository.StatisticRepositoryImpl
 import ru.maplyb.navigation.gui.impl.domain.model.StatisticModel
 
@@ -25,6 +26,8 @@ internal interface StatisticRepository {
     fun getCurrentStatistic(): Flow<StatisticModel?>
 
     suspend fun createEmptyStatistic(currentPosition: GeoPoint?, endPosition: GeoPoint): StatisticModel
+
+    fun logsFlow(statisticId: Int): Flow<List<PositionDataModel>>
 
     suspend fun updateLastPosition(statisticId: Int, geoPoint: GeoPoint)
 

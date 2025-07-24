@@ -14,10 +14,12 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
@@ -27,6 +29,7 @@ import kotlinx.coroutines.withContext
 import ru.maplyb.navigation.gui.api.MaplybNavigationApi
 import ru.maplyb.navigation.gui.api.NavigationLocationListener
 import ru.maplyb.navigation.gui.api.model.GeoPoint
+import ru.maplyb.navigation.gui.impl.data.model.PositionDataModel
 import ru.maplyb.navigation.gui.impl.domain.model.StartRouteArgs
 import ru.maplyb.navigation.gui.impl.domain.model.StatisticModel
 import ru.maplyb.navigation.gui.impl.domain.repository.StatisticRepository
@@ -83,7 +86,19 @@ internal object MaplybNavigationApiImpl : MaplybNavigationApi {
         var currentStatistic by rememberSaveable {
             mutableStateOf<StatisticModel?>(null)
         }
+        var logs by remember {
+            mutableStateOf<List<PositionDataModel>>(emptyList())
+        }
         val visibility by statisticVisibility.collectAsState()
+        LaunchedEffect(currentStatistic) {
+            currentStatistic?.let {
+                repository.logsFlow(it.id)
+                    .onEach {
+                        logs = it
+                    }
+                    .launchIn(this)
+            }
+        }
         LaunchedEffect(Unit) {
             repository.getCurrentStatistic()
                 .onEach {
@@ -119,8 +134,8 @@ internal object MaplybNavigationApiImpl : MaplybNavigationApi {
                             repository.pause(it.id)
                         }
                     }
-
-                }
+                },
+                logs = logs
             )
         }
     }

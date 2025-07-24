@@ -29,7 +29,21 @@ internal data class StatisticModel(
     val startPosition: GeoPoint?,
     val currentSpeed: KmInHour,
     val lifecycle: StatisticLifecycle = StatisticLifecycle.CREATED
-)
+) {
+    companion object {
+        fun default(): StatisticModel = StatisticModel(
+            id = 0,
+            startTime = 0,
+            totalDistance = 0,
+            lastPosition = null,
+            endPoint = GeoPoint(0.0,0.0,0.0),
+            travelTime = 0,
+            averageSpeed = 0.0,
+            startPosition = null,
+            currentSpeed = 0.0
+        )
+    }
+}
 
 
 internal enum class StatisticLifecycle {

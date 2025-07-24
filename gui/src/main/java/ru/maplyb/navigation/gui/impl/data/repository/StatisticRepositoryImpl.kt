@@ -1,5 +1,6 @@
 package ru.maplyb.navigation.gui.impl.data.repository
 
+import androidx.compose.animation.core.updateTransition
 import androidx.room.Transaction
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
@@ -12,6 +13,7 @@ import ru.maplyb.navigation.gui.impl.data.entity.RoutePointEntity
 import ru.maplyb.navigation.gui.impl.data.entity.StatisticEntity
 import ru.maplyb.navigation.gui.impl.data.entity.toEntity
 import ru.maplyb.navigation.gui.impl.data.model.PositionDataModel
+import ru.maplyb.navigation.gui.impl.data.model.PositionTypes
 import ru.maplyb.navigation.gui.impl.domain.model.StatisticLifecycle
 import ru.maplyb.navigation.gui.impl.domain.model.StatisticModel
 import ru.maplyb.navigation.gui.impl.domain.repository.StatisticRepository
@@ -100,11 +102,6 @@ internal class StatisticRepositoryImpl(
                 }
             statistic?.toModel(travelTime)
         }
-
-
-        /*.map {
-        it?.toModel()
-    }*/
     }
 
     override suspend fun checkStartRouteIsPossible(): Boolean {
@@ -127,6 +124,29 @@ internal class StatisticRepositoryImpl(
             startPosition = currentPosition
         )
         return insertAndGet(statistic).toModel(0)
+    }
+
+    override fun logsFlow(statisticId: Int): Flow<List<PositionDataModel>> {
+        return combine(
+            database.pauseDao().getPausesByStatistic(statisticId),
+            database.routePointsDao().getRoutePointsFlow(statisticId)
+        ) { pauses, points ->
+            val mappedAndSortedPauses = pauses.map {
+                PositionDataModel(
+                    it.point,
+                    it.timestamp,
+                    PositionTypes.PAUSE
+                )
+            }
+            val mappedAndSortedPoints = points.map {
+                PositionDataModel(
+                    it.point,
+                    it.timestamp,
+                    PositionTypes.RUN
+                )
+            }
+            mappedAndSortedPoints.plus(mappedAndSortedPauses).sortedBy { it.timestamp }
+        }
     }
 
     @Transaction
