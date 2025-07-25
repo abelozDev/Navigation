@@ -6,6 +6,7 @@ import ru.maplyb.navigation.gui.api.model.GeoPoint
 import ru.maplyb.navigation.gui.impl.domain.model.StatisticLifecycle
 import ru.maplyb.navigation.gui.impl.domain.model.StatisticModel
 import ru.maplyb.navigation.gui.impl.util.distanceInMeters
+import java.util.Locale
 
 internal typealias Meters = Int
 
@@ -37,7 +38,7 @@ internal data class StatisticEntity(
     fun toModel(travelTime: Long): StatisticModel {
 
         val hours = travelTime.toDouble() / (1000 * 60 * 60)
-        val averageSpeed = String.format("%.1f", (leftToDo / 1000.0) / hours).toDouble()
+        val averageSpeed = String.format(Locale.US, "%.1f", (leftToDo / 1000.0) / hours).toDouble()
 
         val totalDistance = lastPosition?.let { distanceInMeters(it, endPoint) } ?: 0
 
