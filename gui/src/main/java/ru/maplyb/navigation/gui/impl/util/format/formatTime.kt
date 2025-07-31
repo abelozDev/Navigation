@@ -1,15 +1,13 @@
 package ru.maplyb.navigation.gui.impl.util.format
 
+import java.util.Locale
+
 internal fun formatTime(seconds: Long): String {
     val h = seconds / 3600
     val m = (seconds % 3600) / 60
     val s = seconds % 60
 
-    return buildString {
-        if (h > 0) append("${h}ч ")
-        if (m > 0 || h > 0) append("${m}мин ")
-        append("${s}сек")
-    }.trim()
+    return String.format(Locale.US, "%02d:%02d:%02d", h, m, s)
 }
 
 internal fun formatMillisecondsTime(milliseconds: Long): String {

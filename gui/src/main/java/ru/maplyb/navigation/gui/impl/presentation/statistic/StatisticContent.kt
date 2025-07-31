@@ -1,5 +1,6 @@
 package ru.maplyb.navigation.gui.impl.presentation.statistic
 
+import android.R
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -8,9 +9,11 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.with
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -18,8 +21,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.BottomSheetScaffold
@@ -28,9 +33,12 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -40,14 +48,20 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ModifierLocalBeyondBoundsLayout
 import androidx.compose.ui.layout.TestModifierUpdaterLayout
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.room.util.TableInfo
 import ru.maplyb.navigation.gui.impl.data.model.PositionDataModel
 import ru.maplyb.navigation.gui.impl.domain.model.StatisticModel
 import ru.maplyb.navigation.gui.impl.ui.icons.iconCollapsed
@@ -69,9 +83,6 @@ internal fun StatisticContent(
     var showLog by remember {
         mutableStateOf(false)
     }
-    var expand by remember {
-        mutableStateOf<Boolean>(true)
-    }
     var sheetContentHeight by remember { mutableStateOf(0.dp) }
     val density = LocalDensity.current
     BottomSheetScaffold(
@@ -79,11 +90,14 @@ internal fun StatisticContent(
         sheetSwipeEnabled = true,
         sheetShadowElevation = 0.dp,
         sheetTonalElevation = 0.dp,
+        sheetContainerColor = Color(0xff2C2A2A),
         sheetPeekHeight = sheetContentHeight + 56.dp,
         sheetContent = {
             Column(
                 modifier = Modifier
-                    .wrapContentSize()
+                    .background(Color(0xff2C2A2A))
+                    .fillMaxWidth()
+                    .wrapContentHeight()
                     .padding(horizontal = 16.dp)
                     .onGloballyPositioned { layoutCoordinates ->
                         sheetContentHeight = with(density) {
@@ -97,40 +111,20 @@ internal fun StatisticContent(
                         .clickable {
                             onDismissRequest()
                         },
+                    tint = Color.White,
                     imageVector = Icons.Default.Close,
                     contentDescription = null
                 )
-                Spacer(Modifier.height(16.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(
-                        text = "Статистика маршрута",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Spacer(Modifier.weight(1f))
-                    ExpandableIcon(expand) {
-                        expand = !expand
-                    }
-                }
                 Spacer(Modifier.height(8.dp))
                 if (statistic != null) {
-                    if (showLog) {
-                        LogsList(logs) {
+                    ExpandRouteStatsBottomSheet(
+                        statistic = statistic,
+                        onPause = pause,
+                        onFinish = clear,
+                        changeShowLigState = {
                             showLog = !showLog
                         }
-                    } else {
-                        ExpandRouteStatsBottomSheet(
-                            statistic = statistic,
-                            showFull = expand,
-                            onPause = pause,
-                            onFinish = clear,
-                            changeShowLigState = {
-                                showLog = !showLog
-                            }
-                        )
-                    }
+                    )
                 } else {
                     Text(
                         text = "Статистика пуста",
@@ -143,69 +137,17 @@ internal fun StatisticContent(
     ) {}
 }
 
-@OptIn(ExperimentalAnimationApi::class)
-@Composable
-private fun ExpandableIcon(
-    isExpanded: Boolean,
-    onClick: () -> Unit
-) {
-    AnimatedContent(
-        targetState = isExpanded,
-        transitionSpec = {
-            fadeIn() with fadeOut()
-        },
-        label = "ExpandCollapseAnimation"
-    ) { targetExpanded ->
-        Icon(
-            modifier = Modifier
-                .clickable {
-                onClick()
-            },
-            imageVector = if (targetExpanded) iconCollapsed() else iconExpand(),
-            contentDescription = if (targetExpanded) "Collapse" else "Expand"
-        )
-    }
-}
-
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-private fun LogsList(
-    logs: List<PositionDataModel>,
-    changeShowLigState: () -> Unit
-) {
-    Column {
-        Text(
-            modifier = Modifier.combinedClickable(
-                onClick = {},
-                onLongClick = {
-                    changeShowLigState()
-                }
-            ),
-            text = "Логи передвижения",
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold
-        )
-        LazyColumn {
-            items(logs.size) {
-                val item = logs[it]
-                Text(
-                    modifier = Modifier.padding(16.dp),
-                    text = "${item.type.name} "
-                )
-            }
-        }
-    }
-}
-
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun ExpandRouteStatsBottomSheet(
     statistic: StatisticModel = StatisticModel.default(),
-    showFull: Boolean = true,
     onPause: () -> Unit = {},
     onFinish: () -> Unit = {},
     changeShowLigState: () -> Unit
 ) {
+    var showFull by remember {
+        mutableStateOf<Boolean>(true)
+    }
     var azimuth by remember() {
         mutableIntStateOf(0)
     }
@@ -224,42 +166,108 @@ private fun ExpandRouteStatsBottomSheet(
         mutableStateOf(formatDistance(statistic.totalDistance))
     }
     val averageSpeed by remember(statistic.averageSpeed) {
-        mutableStateOf("${statistic.averageSpeed}км/ч")
+        mutableStateOf("${statistic.averageSpeed}")
     }
     Column(
         modifier = Modifier
-            .fillMaxWidth(),
+            .fillMaxWidth()
     ) {
-        StatsRow(label = "Осталось идти", value = distanceRemaining)
-        StatsRow(label = "Азимут", value = "${azimuth}°")
+        StatisticFields(
+            "${azimuth}°" to "Азимут",
+            distanceRemaining to "Осталось идти",
+            textStyle = TextStyle(
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Black,
+                textAlign = TextAlign.Center
+            )
+        )
+        Spacer(Modifier.height(16.dp))
         AnimatedVisibility(
             visible = showFull,
             exit = fadeOut() + shrinkVertically()
         ) {
-            Column {
-                StatsRow(label = "Пройдено", value = distancePassed)
-                StatsRow(label = "Время в пути", value = timeElapsed)
-                StatsRow(label = "Средняя скорость", value = averageSpeed)
-                Divider(modifier = Modifier.padding(top = 8.dp))
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+            ) {
+                StatisticFields(
+                    averageSpeed to "Средняя скорость,км/ч",
+                    distancePassed to "Пройдено",
+                    textStyle = TextStyle(
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Black,
+                        textAlign = TextAlign.Center,
+                    )
+                )
                 Spacer(Modifier.height(16.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.End),
-                ) {
-                    OutlinedButton(
-                        onClick = onPause,
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text("Остановить")
-                    }
+                StatisticFields(
+                    timeElapsed to "Время в пути",
+                    textStyle = TextStyle(
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Black,
+                        textAlign = TextAlign.Center
+                    )
+                )
+                Spacer(Modifier.height(16.dp))
+            }
+        }
+        Rectangle { showFull = !showFull }
+    }
+}
 
-                    Button(
-                        onClick = onFinish,
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text("Закончить")
-                    }
-                }
+@Composable
+private fun Rectangle(
+    onClick: () -> Unit = {}
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable {
+                onClick()
+            },
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        repeat(3) {
+            Box(
+                modifier = Modifier
+                    .size(width = 28.dp, height = 3.dp)
+                    .clip(RoundedCornerShape(50.dp))
+                    .background(Color(0xffd4d4d4))
+            )
+            Spacer(Modifier.height(4.dp))
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun PreviewRectangle() {
+    Rectangle()
+}
+
+@Composable
+private fun StatisticFields(
+    vararg statistic: Pair<String, String>,
+    textStyle: TextStyle = LocalTextStyle.current
+) {
+    Row {
+        statistic.forEach { value ->
+            Column(
+                modifier = Modifier.weight(1f),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = value.second,
+                    style = textStyle.copy(
+                        color = Color.White
+                    )
+                )
+                Text(
+                    text = value.first,
+                    style = textStyle.copy(
+                        color = Color.White
+                    )
+                )
             }
         }
     }
@@ -285,7 +293,7 @@ private fun StatsRow(label: String, value: String) {
     }
 }
 
-@Preview
+@Preview(showBackground = true)
 @Composable
 private fun PreviewRouteStatsBottomSheet() {
     ExpandRouteStatsBottomSheet() {}
