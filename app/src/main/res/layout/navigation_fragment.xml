@@ -27,12 +27,30 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
 
-        <Button
-            android:id="@+id/checkButton"
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Проверить текущий" />
+            android:layout_height="wrap_content">
+            <Button
+                android:id="@+id/checkButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Проверить текущий" />
+
+            <Button
+                android:id="@+id/stopStatistic"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Остановить" />
+            <Button
+                android:id="@+id/resumeStatistic"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Возобновить" />
+        </LinearLayout>
+
 
         <LinearLayout
             android:id="@+id/buttonsLayout"

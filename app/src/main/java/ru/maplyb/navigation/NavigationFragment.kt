@@ -45,6 +45,8 @@ class NavigationFragment : Fragment(R.layout.navigation_fragment), OnMapReadyCal
     private lateinit var deleteRouteButton: Button
     private lateinit var buttonsLayout: LinearLayout
     private lateinit var showRoute: Button
+    private lateinit var stopButton: Button
+    private lateinit var resumeButton: Button
     private lateinit var composeView: ComposeView
 
     private lateinit var navigationLib: MaplybNavigationApi
@@ -62,6 +64,8 @@ class NavigationFragment : Fragment(R.layout.navigation_fragment), OnMapReadyCal
         checkButton = view.findViewById(R.id.checkButton)
         deleteRouteButton = view.findViewById(R.id.deleteRoute)
         showRoute = view.findViewById(R.id.showRoute)
+        stopButton = view.findViewById(R.id.stopStatistic)
+        resumeButton = view.findViewById(R.id.resumeStatistic)
         buttonsLayout = view.findViewById(R.id.buttonsLayout)
         composeView = view.findViewById(R.id.composeView)
 
@@ -97,6 +101,16 @@ class NavigationFragment : Fragment(R.layout.navigation_fragment), OnMapReadyCal
     fun initViews() {
         composeView.setContent {
             navigationLib.ShowStatistic()
+        }
+        stopButton.setOnClickListener {
+            navigationLib.stopStatistic()
+        }
+        resumeButton.setOnClickListener {
+            navigationLib.resumeCurrentStatistic { startLocation, endLocation ->
+                println(
+                    "resume startLocation: $startLocation, \nendLocation: $endLocation"
+                )
+            }
         }
         deleteRouteButton.setOnClickListener {
             selectedLocation.value = null

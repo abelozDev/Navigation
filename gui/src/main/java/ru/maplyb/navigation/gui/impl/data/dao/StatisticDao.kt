@@ -30,6 +30,9 @@ internal interface StatisticDao {
     @Query("SELECT * FROM StatisticEntity WHERE lifecycle != :lifecycle")
     fun getCurrentStatistic(lifecycle: StatisticLifecycle = StatisticLifecycle.END): Flow<StatisticEntity?>
 
+    @Query("SELECT * FROM StatisticEntity WHERE lifecycle == :lifecycle")
+    fun getStatisticByLifecycleState(lifecycle: StatisticLifecycle = StatisticLifecycle.END): StatisticEntity?
+
     @Transaction
     @Query("SELECT * FROM StatisticEntity WHERE lifecycle != :lifecycle LIMIT 1")
     fun getCurrentStatisticWithPoints(

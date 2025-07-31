@@ -4,6 +4,7 @@ import androidx.compose.animation.core.updateTransition
 import androidx.room.Transaction
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import ru.maplyb.navigation.gui.api.model.GeoPoint
 import ru.maplyb.navigation.gui.impl.data.database.NavigationDatabase
@@ -33,6 +34,7 @@ internal class StatisticRepositoryImpl(
             }
         }
     }
+
     private suspend fun setLifecycle(statisticId: Int, lifecycle: StatisticLifecycle) {
         database.statisticDao().getById(statisticId.toLong())?.let {
             database.statisticDao().updateStatistic(
@@ -50,7 +52,20 @@ internal class StatisticRepositoryImpl(
     override suspend fun forcePause(statisticId: Int) {
         setLifecycle(statisticId, StatisticLifecycle.FORCE_PAUSE)
     }
+    override suspend fun stopStatistic(statisticId: Int) {
+        setLifecycle(statisticId, StatisticLifecycle.STOPPED)
+    }
 
+    override suspend fun resumeStatistic(statisticId: Int) {
+        setLifecycle(statisticId, StatisticLifecycle.CREATED)
+    }
+
+    override suspend fun resumeCurrentStatistic(): StatisticModel? {
+        return database.statisticDao().getStatisticByLifecycleState(StatisticLifecycle.STOPPED)?.let {
+            resumeStatistic(it.id)
+            getStatisticByIdFlow(it.id).first()
+        }
+    }
     override suspend fun clear() {
         database.statisticDao().clear()
     }
@@ -106,10 +121,12 @@ internal class StatisticRepositoryImpl(
                     .let { allPausesTime ->
                         timestamp - statistic.startTime - allPausesTime
                     }
-                statistic.toModel((travelTime/1000)*1000)
+                statistic.toModel((travelTime / 1000) * 1000)
             }
 
     }
+
+
 
     override suspend fun checkStartRouteIsPossible(): Boolean {
         val statistics = database.statisticDao().getAll()

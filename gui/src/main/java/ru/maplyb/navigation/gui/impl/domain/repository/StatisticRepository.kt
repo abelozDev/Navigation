@@ -26,6 +26,12 @@ internal interface StatisticRepository {
 
     fun getCurrentStatistic(): Flow<StatisticModel?>
 
+    suspend fun stopStatistic(statisticId: Int)
+
+    suspend fun resumeStatistic(statisticId: Int)
+
+    suspend fun resumeCurrentStatistic(): StatisticModel?
+
     suspend fun createEmptyStatistic(currentPosition: GeoPoint?, endPosition: GeoPoint): StatisticModel
 
     fun logsFlow(statisticId: Int): Flow<List<PositionDataModel>>

@@ -38,6 +38,7 @@ internal class NavigationService() : Service() {
 
     private var locationListener: NavigationLocationListener? = null
 
+    private var statisticId: Int? = null
 
     override fun onCreate() {
         super.onCreate()
@@ -46,6 +47,15 @@ internal class NavigationService() : Service() {
         repository = StatisticRepository.create(applicationContext)
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        coroutineScope.launch {
+            statisticId?.let { id ->
+                repository.stopStatistic(id)
+            }
+        }
+        println("service work destroyed")
+    }
     fun setLocationListener(listener: NavigationLocationListener) {
         this.locationListener = listener
     }
@@ -56,19 +66,20 @@ internal class NavigationService() : Service() {
 
     private fun startRoute(args: StartRouteArgs) {
         coroutineScope.launch {
-            val haveStartedRoute = repository.getCurrentStatistic().first()
-            if (haveStartedRoute != null) {
-                repository.deleteStatistic(haveStartedRoute)
-            }
-            val lastKnowLocation = locationManager.getLastKnownLocation()?.let {
-                GeoPoint(
-                    latitude = it.latitude,
-                    longitude = it.longitude,
-                    altitude = it.altitude
-                )
-            }
-            val newStatisticId: Int =
+            statisticId = if (args.statisticId == null) {
+                val haveStartedRoute = repository.getCurrentStatistic().first()
+                if (haveStartedRoute != null) {
+                    repository.deleteStatistic(haveStartedRoute)
+                }
+                val lastKnowLocation = locationManager.getLastKnownLocation()?.let {
+                    GeoPoint(
+                        latitude = it.latitude,
+                        longitude = it.longitude,
+                        altitude = it.altitude
+                    )
+                }
                 repository.createEmptyStatistic(lastKnowLocation, args.endPoint).id
+            } else args.statisticId
             startForeground(
                 NAVIGATION_NOTIFICATION_ID,
                 createNotification(
@@ -81,7 +92,9 @@ internal class NavigationService() : Service() {
                     .init()
                     .collect { location ->
                         ensureActive()
-                        repository.updateLastPosition(newStatisticId, location.toGeoPoint())
+                        println("service work $location")
+                        check(statisticId != null) { "statistic id is null" }
+                        repository.updateLastPosition(statisticId!!, location.toGeoPoint())
                         locationListener?.locationUpdated(
                             startLocation = GeoPoint(
                                 latitude = location.latitude,

@@ -54,11 +54,17 @@ internal data class StatisticModel(
 }
 
 
+/*
+* CREATED - статистика создана и работает
+* PAUSED - пауза (нет движения)
+* FORCE_PAUSE - пользователь поставил на паузу
+* STOPPED - сервис перестал работать, можно перезапустить
+* END - маршрут закончен*/
 internal enum class StatisticLifecycle {
     CREATED,
     PAUSED,
     FORCE_PAUSE,
-    IN_PROGRESS,
+    STOPPED,
     END;
 }
 

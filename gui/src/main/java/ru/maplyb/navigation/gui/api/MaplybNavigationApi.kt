@@ -33,7 +33,10 @@ public interface MaplybNavigationApi {
     /**Пауза текущего маршрута*/
     public fun pause()
 
-
+    /**Останавливает статистику (эмитация остановки сервиса)*/
+    public fun stopStatistic()
+    /**Возобновить последнюю статистику*/
+    public fun resumeCurrentStatistic(locationListener: NavigationLocationListener)
     /**Возвращает [GeoPoint] конечной точки, если есть начаный маршрут. Если нет - null */
     public fun currentRouteEndPoint(): GeoPoint?
 

@@ -100,8 +100,24 @@ internal object MaplybNavigationApiImpl : MaplybNavigationApi {
         }
     }
 
+    override fun stopStatistic() {
+        scope.launch {
+            globalCurrentStatistic?.let {
+                repository.stopStatistic(it.id)
+            }
+        }
+    }
+
     override fun currentRouteEndPoint(): GeoPoint? {
         return if (globalCurrentStatistic?.lifecycle != StatisticLifecycle.END) globalCurrentStatistic?.lastPosition else null
+    }
+
+    override fun resumeCurrentStatistic(locationListener: NavigationLocationListener) {
+        scope.launch {
+            repository.resumeCurrentStatistic()?.let {
+                resumeRoute(endPoint = it.endPoint, statisticId = it.id, locationListener)
+            }
+        }
     }
 
     @OptIn(ExperimentalMaterial3Api::class)
@@ -163,19 +179,23 @@ internal object MaplybNavigationApiImpl : MaplybNavigationApi {
         }
     }
 
+    private fun resumeRoute(endPoint: GeoPoint, statisticId: Int, locationListener: NavigationLocationListener) {
+        startService(StartRouteArgs(endPoint, statisticId), locationListener)
+    }
+
     override fun startRoute(endPoint: GeoPoint, locationListener: NavigationLocationListener) {
-        scope.launch {
-            withContext(Dispatchers.Main) {
-                NotificationChannel.create(application)
-                val intent = Intent(application, NavigationService::class.java).run {
-                    putExtra(NavigationService.NAVIGATION_END_POINT, StartRouteArgs(endPoint))
-                }
-                application.startService(intent)
-                if (!mBound) {
-                    application.bindService(intent, connection, Context.BIND_AUTO_CREATE)
-                }
-                this@MaplybNavigationApiImpl.locationListener = locationListener
-            }
+        startService(StartRouteArgs(endPoint, null), locationListener)
+    }
+
+    private fun startService(args: StartRouteArgs, locationListener: NavigationLocationListener) {
+        NotificationChannel.create(application)
+        val intent = Intent(application, NavigationService::class.java).run {
+            putExtra(NavigationService.NAVIGATION_END_POINT, args)
         }
+        application.startService(intent)
+        if (!mBound) {
+            application.bindService(intent, connection, Context.BIND_AUTO_CREATE)
+        }
+        this@MaplybNavigationApiImpl.locationListener = locationListener
     }
 }
