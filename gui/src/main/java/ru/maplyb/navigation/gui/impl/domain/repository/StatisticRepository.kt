@@ -11,6 +11,7 @@ import ru.maplyb.navigation.gui.impl.domain.model.StatisticModel
 internal interface StatisticRepository {
 
     suspend fun pause(statisticId: Int)
+    suspend fun forcePause(statisticId: Int)
     suspend fun clear()
     fun getStatisticsFlow(): Flow<List<StatisticModel>>
 

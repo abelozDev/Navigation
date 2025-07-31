@@ -28,6 +28,16 @@ public interface MaplybNavigationApi {
     @Composable
     public fun ShowStatistic()
 
+    /**Пауза текущего маршрута*/
+    public fun pause()
+
+
+    /**Проверка возможности начать новый маршрут
+     * false - маршрут уже начат
+     * true - нет текущих маршрутов
+     * */
+    public fun isStartPossible(): Boolean
+
      /**Начало маршрута
      * @param endPoint конечная точка маршрута
      * @param locationListener возвращает начальную и конечную точки для посторения маршрута

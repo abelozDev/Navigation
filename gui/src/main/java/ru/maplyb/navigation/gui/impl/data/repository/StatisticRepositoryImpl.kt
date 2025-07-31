@@ -33,15 +33,22 @@ internal class StatisticRepositoryImpl(
             }
         }
     }
-
-    override suspend fun pause(statisticId: Int) {
+    private suspend fun setLifecycle(statisticId: Int, lifecycle: StatisticLifecycle) {
         database.statisticDao().getById(statisticId.toLong())?.let {
             database.statisticDao().updateStatistic(
                 it.copy(
-                    lifecycle = StatisticLifecycle.PAUSED
+                    lifecycle = lifecycle
                 )
             )
         }
+    }
+
+    override suspend fun pause(statisticId: Int) {
+        setLifecycle(statisticId, StatisticLifecycle.PAUSED)
+    }
+
+    override suspend fun forcePause(statisticId: Int) {
+        setLifecycle(statisticId, StatisticLifecycle.FORCE_PAUSE)
     }
 
     override suspend fun clear() {
@@ -152,8 +159,9 @@ internal class StatisticRepositoryImpl(
     @Transaction
     override suspend fun updateLastPosition(statisticId: Int, geoPoint: GeoPoint) {
         val statistic = database.statisticDao().getById(statisticId.toLong())
-        /**Может быть null если удалили статистику, но пришла геолокация*/
-        if (statistic == null) return
+        /**Может быть null если удалили статистику, но пришла геолокации.
+         * Если lifecycle = FORCE_PAUSE, не учитываем обновление*/
+        if (statistic == null || statistic.lifecycle == StatisticLifecycle.FORCE_PAUSE) return
         val timestamp = System.currentTimeMillis()
         var isPaused = false
         val newStatistic = if (statistic.lastPosition != null) {

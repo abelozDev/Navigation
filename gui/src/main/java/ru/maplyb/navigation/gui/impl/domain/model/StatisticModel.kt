@@ -3,6 +3,7 @@ package ru.maplyb.navigation.gui.impl.domain.model
 import ru.maplyb.navigation.gui.api.model.GeoPoint
 import ru.maplyb.navigation.gui.impl.data.entity.KmInHour
 import ru.maplyb.navigation.gui.impl.data.entity.Meters
+import java.io.Serializable
 
 /**
  * @param startTime начало пути
@@ -29,7 +30,7 @@ internal data class StatisticModel(
     val startPosition: GeoPoint?,
     val currentSpeed: KmInHour,
     val lifecycle: StatisticLifecycle = StatisticLifecycle.CREATED
-) {
+): Serializable {
     companion object {
         fun default(): StatisticModel = StatisticModel(
             id = 0,
@@ -49,6 +50,7 @@ internal data class StatisticModel(
 internal enum class StatisticLifecycle {
     CREATED,
     PAUSED,
+    FORCE_PAUSE,
     IN_PROGRESS,
     END;
 }

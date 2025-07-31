@@ -8,7 +8,10 @@ import android.content.Intent
 import android.content.ServiceConnection
 import android.os.IBinder
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.SheetValue
+import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -31,6 +34,7 @@ import ru.maplyb.navigation.gui.api.NavigationLocationListener
 import ru.maplyb.navigation.gui.api.model.GeoPoint
 import ru.maplyb.navigation.gui.impl.data.model.PositionDataModel
 import ru.maplyb.navigation.gui.impl.domain.model.StartRouteArgs
+import ru.maplyb.navigation.gui.impl.domain.model.StatisticLifecycle
 import ru.maplyb.navigation.gui.impl.domain.model.StatisticModel
 import ru.maplyb.navigation.gui.impl.domain.repository.StatisticRepository
 import ru.maplyb.navigation.gui.impl.presentation.location.LibLocationManager
@@ -43,6 +47,7 @@ internal object MaplybNavigationApiImpl : MaplybNavigationApi {
     private lateinit var mService: NavigationService
     private var mBound: Boolean = false
     private var locationListener: NavigationLocationListener? = null
+    private var globalCurrentStatistic: StatisticModel? = null
 
     private val connection = object : ServiceConnection {
         override fun onServiceConnected(className: ComponentName, service: IBinder) {
@@ -80,6 +85,20 @@ internal object MaplybNavigationApiImpl : MaplybNavigationApi {
         //todo сделать логику продолжения отслеживания локации если путь уже начат. Возможно пора добавить сервис
     }
 
+    override fun pause() {
+        globalCurrentStatistic?.let {
+            scope.launch {
+                repository.forcePause(it.id)
+            }
+        }
+    }
+
+    override fun isStartPossible(): Boolean {
+        return globalCurrentStatistic?.let {
+             it.lifecycle == StatisticLifecycle.END
+        } ?: true
+    }
+
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     override fun ShowStatistic() {
@@ -90,7 +109,16 @@ internal object MaplybNavigationApiImpl : MaplybNavigationApi {
             mutableStateOf<List<PositionDataModel>>(emptyList())
         }
         val visibility by statisticVisibility.collectAsState()
+        LaunchedEffect(Unit) {
+            repository.getCurrentStatistic()
+                .onEach {
+                    currentStatistic = it
+                    println("current statistic lifecycle: ${it?.lifecycle}")
+                }
+                .launchIn(this)
+        }
         LaunchedEffect(currentStatistic) {
+            globalCurrentStatistic = currentStatistic
             currentStatistic?.let {
                 repository.logsFlow(it.id)
                     .onEach {
@@ -99,25 +127,25 @@ internal object MaplybNavigationApiImpl : MaplybNavigationApi {
                     .launchIn(this)
             }
         }
-        LaunchedEffect(Unit) {
-            repository.getCurrentStatistic()
-                .onEach {
-                    currentStatistic = it
-                }
-                .launchIn(this)
-        }
+        val scaffoldState = rememberBottomSheetScaffoldState(
+            bottomSheetState = rememberStandardBottomSheetState(
+                initialValue = SheetValue.PartiallyExpanded,
+                skipHiddenState = true
+            )
+        )
         val sheetState = rememberModalBottomSheetState()
         LaunchedEffect(visibility) {
             if (visibility) {
-                sheetState.show()
+                sheetState.partialExpand()
             } else {
                 sheetState.hide()
             }
         }
+
         /**Костыль чтобы ComposeView не перекрывало карту*/
         if (visibility) {
             StatisticContent(
-                sheetState = sheetState,
+                scaffoldState = scaffoldState,
                 statistic = currentStatistic,
                 onDismissRequest = {
                     hide()
@@ -128,12 +156,7 @@ internal object MaplybNavigationApiImpl : MaplybNavigationApi {
                     }
                 },
                 pause = {
-                    //не может быть null
-                    currentStatistic?.let {
-                        scope.launch {
-                            repository.pause(it.id)
-                        }
-                    }
+                    pause()
                 },
                 logs = logs
             )

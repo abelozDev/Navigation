@@ -87,6 +87,7 @@ class NavigationFragment : Fragment(R.layout.navigation_fragment), OnMapReadyCal
         navigationLib.init(requireActivity())
         initViews()
     }
+
     fun initViews() {
         composeView.setContent {
             navigationLib.ShowStatistic()
@@ -96,19 +97,24 @@ class NavigationFragment : Fragment(R.layout.navigation_fragment), OnMapReadyCal
             maplibreMap.clear()
         }
         startRouteButton.setOnClickListener {
-            selectedLocation.value?.let {
-                navigationLib.startRoute(
-                    GeoPoint(
-                        it.latitude,
-                        it.longitude,
-                        0.0
-                    )
-                ) { startLocation, endLocation ->
-                    println(
-                        "startLocation: $startLocation, \nendLocation: $endLocation"
-                    )
+            if (navigationLib.isStartPossible()) {
+                selectedLocation.value?.let {
+                    navigationLib.startRoute(
+                        GeoPoint(
+                            it.latitude,
+                            it.longitude,
+                            0.0
+                        )
+                    ) { startLocation, endLocation ->
+                        println(
+                            "startLocation: $startLocation, \nendLocation: $endLocation"
+                        )
+                    }
                 }
+            } else {
+                Toast.makeText(requireContext(), "Уже есть начатый маршрут!", Toast.LENGTH_SHORT).show()
             }
+
         }
         showRoute.setOnClickListener {
             navigationLib.show()
