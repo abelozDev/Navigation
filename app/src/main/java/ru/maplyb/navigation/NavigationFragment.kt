@@ -65,6 +65,7 @@ class NavigationFragment : Fragment(R.layout.navigation_fragment), OnMapReadyCal
         buttonsLayout = view.findViewById(R.id.buttonsLayout)
         composeView = view.findViewById(R.id.composeView)
 
+
         mapView.getMapAsync { map ->
             map.setStyle("https://demotiles.maplibre.org/style.json")
             map.cameraPosition = CameraPosition.Builder().target(LatLng(0.0, 0.0)).zoom(1.0).build()
@@ -85,8 +86,11 @@ class NavigationFragment : Fragment(R.layout.navigation_fragment), OnMapReadyCal
                 }
         }
         checkPermissions()
-        navigationLib = MaplybNavigationApi.create()
-        navigationLib.init(requireActivity())
+        navigationLib = MaplybNavigationApi.create().apply {
+            init(requireActivity())
+            onStatisticChanged {
+            }
+        }
         initViews()
     }
 

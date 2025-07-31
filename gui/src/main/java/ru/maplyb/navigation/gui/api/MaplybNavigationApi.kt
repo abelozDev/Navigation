@@ -3,10 +3,12 @@ package ru.maplyb.navigation.gui.api
 import android.app.Activity
 import androidx.compose.runtime.Composable
 import ru.maplyb.navigation.gui.api.model.GeoPoint
+import ru.maplyb.navigation.gui.api.model.RouteStatistic
 import ru.maplyb.navigation.gui.impl.MaplybNavigationApiImpl
 
 public interface MaplybNavigationApi {
 
+    public fun onStatisticChanged(callback: (RouteStatistic) -> Unit)
     /**
      * Открывает экран со статистикой
      * */
@@ -32,10 +34,7 @@ public interface MaplybNavigationApi {
     public fun pause()
 
 
-    /**Проверка возможности начать новый маршрут
-     * false - маршрут уже начат
-     * true - нет текущих маршрутов
-     * */
+    /**Возвращает [GeoPoint] конечной точки, если есть начаный маршрут. Если нет - null */
     public fun currentRouteEndPoint(): GeoPoint?
 
      /**Начало маршрута

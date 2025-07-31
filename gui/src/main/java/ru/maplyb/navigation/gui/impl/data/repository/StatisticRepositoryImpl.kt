@@ -106,7 +106,7 @@ internal class StatisticRepositoryImpl(
                     .let { allPausesTime ->
                         timestamp - statistic.startTime - allPausesTime
                     }
-                statistic.toModel(travelTime)
+                statistic.toModel((travelTime/1000)*1000)
             }
 
     }

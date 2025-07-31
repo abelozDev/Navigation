@@ -81,7 +81,6 @@ internal class NavigationService() : Service() {
                     .init()
                     .collect { location ->
                         ensureActive()
-                        println("location altitude: ${location.altitude}")
                         repository.updateLastPosition(newStatisticId, location.toGeoPoint())
                         locationListener?.locationUpdated(
                             startLocation = GeoPoint(

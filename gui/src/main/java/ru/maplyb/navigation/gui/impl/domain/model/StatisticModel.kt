@@ -1,6 +1,7 @@
 package ru.maplyb.navigation.gui.impl.domain.model
 
 import ru.maplyb.navigation.gui.api.model.GeoPoint
+import ru.maplyb.navigation.gui.api.model.RouteStatistic
 import ru.maplyb.navigation.gui.impl.data.entity.KmInHour
 import ru.maplyb.navigation.gui.impl.data.entity.Meters
 import java.io.Serializable
@@ -44,6 +45,12 @@ internal data class StatisticModel(
             currentSpeed = 0.0
         )
     }
+
+    fun toRouteStatistic(): RouteStatistic = RouteStatistic(
+        totalDistance = totalDistance,
+        endPoint = endPoint,
+        lastPosition = lastPosition
+    )
 }
 
 

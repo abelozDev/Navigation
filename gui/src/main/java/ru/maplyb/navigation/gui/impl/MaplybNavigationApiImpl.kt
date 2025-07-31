@@ -24,6 +24,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -32,6 +33,7 @@ import kotlinx.coroutines.withContext
 import ru.maplyb.navigation.gui.api.MaplybNavigationApi
 import ru.maplyb.navigation.gui.api.NavigationLocationListener
 import ru.maplyb.navigation.gui.api.model.GeoPoint
+import ru.maplyb.navigation.gui.api.model.RouteStatistic
 import ru.maplyb.navigation.gui.impl.data.model.PositionDataModel
 import ru.maplyb.navigation.gui.impl.domain.model.StartRouteArgs
 import ru.maplyb.navigation.gui.impl.domain.model.StatisticLifecycle
@@ -48,7 +50,7 @@ internal object MaplybNavigationApiImpl : MaplybNavigationApi {
     private var mBound: Boolean = false
     private var locationListener: NavigationLocationListener? = null
     private var globalCurrentStatistic: StatisticModel? = null
-
+    private var onStatisticChangedCallback: ((RouteStatistic) -> Unit)? = null
     private val connection = object : ServiceConnection {
         override fun onServiceConnected(className: ComponentName, service: IBinder) {
             val binder = service as NavigationService.LocalBinder
@@ -70,6 +72,10 @@ internal object MaplybNavigationApiImpl : MaplybNavigationApi {
     private val statisticVisibility: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
     val scope = CoroutineScope(Dispatchers.IO)
+
+    override fun onStatisticChanged(callback: (RouteStatistic) -> Unit) {
+        this.onStatisticChangedCallback = callback
+    }
 
     override fun show() {
         statisticVisibility.value = true
@@ -110,21 +116,16 @@ internal object MaplybNavigationApiImpl : MaplybNavigationApi {
         val visibility by statisticVisibility.collectAsState()
         LaunchedEffect(Unit) {
             repository.getCurrentStatistic()
-                .onEach {
-                    currentStatistic = it
-                    println("current statistic lifecycle: ${it?.lifecycle}")
+                .distinctUntilChanged()
+                .onEach { statistic ->
+                    println("statistic changed: $statistic")
+                    currentStatistic = statistic
+                    globalCurrentStatistic = statistic
+                    statistic?.let {
+                        onStatisticChangedCallback?.invoke(it.toRouteStatistic())
+                    }
                 }
                 .launchIn(this)
-        }
-        LaunchedEffect(currentStatistic) {
-            globalCurrentStatistic = currentStatistic
-            currentStatistic?.let {
-                repository.logsFlow(it.id)
-                    .onEach {
-                        logs = it
-                    }
-                    .launchIn(this)
-            }
         }
         val scaffoldState = rememberBottomSheetScaffoldState(
             bottomSheetState = rememberStandardBottomSheetState(
