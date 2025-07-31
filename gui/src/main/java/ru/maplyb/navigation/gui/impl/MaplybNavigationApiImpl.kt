@@ -46,7 +46,7 @@ import ru.maplyb.navigation.gui.impl.service.NotificationChannel
 
 internal object MaplybNavigationApiImpl : MaplybNavigationApi {
 
-    private lateinit var mService: NavigationService
+    private var mService: NavigationService? = null
     private var mBound: Boolean = false
     private var locationListener: NavigationLocationListener? = null
     private var globalCurrentStatistic: StatisticModel? = null
@@ -57,11 +57,12 @@ internal object MaplybNavigationApiImpl : MaplybNavigationApi {
             mService = binder.getService()
             mBound = true
             locationListener?.let {
-                mService.setLocationListener(it)
+                mService?.setLocationListener(it)
             }
         }
 
         override fun onServiceDisconnected(arg0: ComponentName) {
+            mService = null
             mBound = false
         }
     }
@@ -131,10 +132,13 @@ internal object MaplybNavigationApiImpl : MaplybNavigationApi {
         }
         val visibility by statisticVisibility.collectAsState()
         LaunchedEffect(Unit) {
-            repository.getCurrentStatistic()
+            repository.getLastStatistic()
                 .distinctUntilChanged()
                 .onEach { statistic ->
                     println("statistic changed: $statistic")
+                    if (statistic?.lifecycle == StatisticLifecycle.END) {
+                        stopService()
+                    }
                     currentStatistic = statistic
                     globalCurrentStatistic = statistic
                     statistic?.let {
@@ -185,6 +189,16 @@ internal object MaplybNavigationApiImpl : MaplybNavigationApi {
 
     override fun startRoute(endPoint: GeoPoint, locationListener: NavigationLocationListener) {
         startService(StartRouteArgs(endPoint, null), locationListener)
+    }
+
+    private fun stopService() {
+        if (mBound) {
+            mService?.stopServiceFromClient()
+            application.unbindService(connection)
+            mBound = false
+        }
+        val intent = Intent(application, NavigationService::class.java)
+        application.stopService(intent)
     }
 
     private fun startService(args: StartRouteArgs, locationListener: NavigationLocationListener) {

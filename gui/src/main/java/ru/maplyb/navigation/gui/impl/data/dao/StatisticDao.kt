@@ -39,6 +39,10 @@ internal interface StatisticDao {
         lifecycle: StatisticLifecycle = StatisticLifecycle.END
     ): Flow<StatisticWithPoints?>
 
+    @Transaction
+    @Query("SELECT * FROM StatisticEntity LIMIT 1")
+    fun getLastStatisticWithPoints(): Flow<StatisticWithPoints?>
+
     @Query("SELECT * FROM StatisticEntity WHERE id = :id")
     suspend fun getById(id: Long): StatisticEntity?
 

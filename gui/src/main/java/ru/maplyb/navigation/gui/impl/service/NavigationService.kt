@@ -9,6 +9,7 @@ import androidx.core.app.NotificationCompat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -49,12 +50,14 @@ internal class NavigationService() : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
-        coroutineScope.launch {
-            statisticId?.let { id ->
-                repository.stopStatistic(id)
-            }
-        }
-        println("service work destroyed")
+        coroutineScope.cancel()
+        locationListener = null
+    }
+
+
+    fun stopServiceFromClient() {
+        stopForeground(STOP_FOREGROUND_REMOVE)
+        stopSelf()
     }
     fun setLocationListener(listener: NavigationLocationListener) {
         this.locationListener = listener
@@ -67,7 +70,7 @@ internal class NavigationService() : Service() {
     private fun startRoute(args: StartRouteArgs) {
         coroutineScope.launch {
             statisticId = if (args.statisticId == null) {
-                val haveStartedRoute = repository.getCurrentStatistic().first()
+                val haveStartedRoute = repository.getLastStatistic().first()
                 if (haveStartedRoute != null) {
                     repository.deleteStatistic(haveStartedRoute)
                 }

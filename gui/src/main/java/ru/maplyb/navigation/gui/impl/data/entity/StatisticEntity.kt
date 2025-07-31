@@ -58,6 +58,8 @@ internal data class StatisticEntity(
     }
 
     companion object {
+        /**Расстояние в метрах для завершения*/
+        const val END_DISTANCE = 15
         /*М*/
         const val MIN_DISTANCE = 5
         /*Км/Ч*/

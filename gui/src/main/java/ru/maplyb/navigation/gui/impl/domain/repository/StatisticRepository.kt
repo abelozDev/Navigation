@@ -24,6 +24,8 @@ internal interface StatisticRepository {
 
     suspend fun checkStartRouteIsPossible(): Boolean
 
+    fun getLastStatistic(): Flow<StatisticModel?>
+
     fun getCurrentStatistic(): Flow<StatisticModel?>
 
     suspend fun stopStatistic(statisticId: Int)

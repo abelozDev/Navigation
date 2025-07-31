@@ -12,6 +12,8 @@ import ru.maplyb.navigation.gui.impl.data.entity.Meters
 import ru.maplyb.navigation.gui.impl.data.entity.PauseEntity
 import ru.maplyb.navigation.gui.impl.data.entity.RoutePointEntity
 import ru.maplyb.navigation.gui.impl.data.entity.StatisticEntity
+import ru.maplyb.navigation.gui.impl.data.entity.StatisticEntity.Companion.END_DISTANCE
+import ru.maplyb.navigation.gui.impl.data.entity.StatisticWithPoints
 import ru.maplyb.navigation.gui.impl.data.entity.toEntity
 import ru.maplyb.navigation.gui.impl.data.model.PositionDataModel
 import ru.maplyb.navigation.gui.impl.data.model.PositionTypes
@@ -100,8 +102,16 @@ internal class StatisticRepositoryImpl(
         database.statisticDao().insertStatistic(statisticModel.toEntity())
     }
 
+    override fun getLastStatistic(): Flow<StatisticModel?> {
+        return getStatistic(database.statisticDao().getLastStatisticWithPoints())
+    }
+
     override fun getCurrentStatistic(): Flow<StatisticModel?> {
-        return database.statisticDao().getCurrentStatisticWithPoints()
+        return getStatistic(database.statisticDao().getCurrentStatisticWithPoints())
+    }
+
+    private fun getStatistic(statisticFlow: Flow<StatisticWithPoints?>): Flow<StatisticModel?> {
+        return statisticFlow
             .map { statWithPoints ->
                 if (statWithPoints == null) return@map null
                 val statistic = statWithPoints.statistic
@@ -123,7 +133,6 @@ internal class StatisticRepositoryImpl(
                     }
                 statistic.toModel((travelTime / 1000) * 1000)
             }
-
     }
 
 
@@ -173,15 +182,37 @@ internal class StatisticRepositoryImpl(
         }
     }
 
+    private fun checkStatisticEnd(currentPosition: GeoPoint, targetPosition: GeoPoint): Boolean {
+        val distanceInMeters = distanceInMeters(
+            lat1 = currentPosition.latitude,
+            lon1 = currentPosition.longitude,
+            lat2 = targetPosition.latitude,
+            lon2 = targetPosition.longitude
+        )
+        return distanceInMeters <= END_DISTANCE
+    }
+
     @Transaction
     override suspend fun updateLastPosition(statisticId: Int, geoPoint: GeoPoint) {
+        /**Проверка что дошли до конца*/
         val statistic = database.statisticDao().getById(statisticId.toLong())
+        if (statistic == null || statistic.lifecycle == StatisticLifecycle.END) return
+        val isEnd = checkStatisticEnd(geoPoint, statistic.endPoint)
+        if (isEnd) {
+            setLifecycle(statisticId, StatisticLifecycle.END)
+        } else {
+            updateStatistic(statistic, geoPoint)
+        }
+    }
+
+    private suspend fun updateStatistic(statistic: StatisticEntity, geoPoint: GeoPoint) {
         /**Может быть null если удалили статистику, но пришла геолокации.
          * Если lifecycle = FORCE_PAUSE, не учитываем обновление*/
-        if (statistic == null || statistic.lifecycle == StatisticLifecycle.FORCE_PAUSE) return
+        if (statistic.lifecycle == StatisticLifecycle.FORCE_PAUSE) return
         val timestamp = System.currentTimeMillis()
         var isPaused = false
         val newStatistic = if (statistic.lastPosition != null) {
+
             val distanceInMeters = distanceInMeters(
                 lat1 = statistic.lastPosition.latitude,
                 lon1 = statistic.lastPosition.longitude,
@@ -205,14 +236,14 @@ internal class StatisticRepositoryImpl(
         }
         if (isPaused) {
             savePausePoint(
-                statisticId = statisticId,
+                statisticId = statistic.id,
                 point = geoPoint,
                 timestamp = timestamp,
                 statisticLifecycle = statistic.lifecycle
             )
         } else {
             saveRoutePoint(
-                statisticId = statisticId,
+                statisticId = statistic.id,
                 point = geoPoint,
                 timestamp = timestamp,
                 statisticLifecycle = statistic.lifecycle
