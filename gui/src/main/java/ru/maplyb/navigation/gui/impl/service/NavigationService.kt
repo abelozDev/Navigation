@@ -10,11 +10,13 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import ru.maplyb.navigation.gui.api.NavigationLocationListener
 import ru.maplyb.navigation.gui.api.model.GeoPoint
 import ru.maplyb.navigation.gui.api.model.toGeoPoint
+import ru.maplyb.navigation.gui.impl.MaplybNavigationApiImpl
 import ru.maplyb.navigation.gui.impl.data.database.Database
 import ru.maplyb.navigation.gui.impl.data.database.NavigationDatabase
 import ru.maplyb.navigation.gui.impl.domain.model.StartRouteArgs
@@ -54,8 +56,10 @@ internal class NavigationService() : Service() {
 
     private fun startRoute(args: StartRouteArgs) {
         coroutineScope.launch {
-            val isCreatePossible = repository.checkStartRouteIsPossible()
-            if (!isCreatePossible) throw IllegalStateException("Route already started")
+            val haveStartedRoute = repository.getCurrentStatistic().first()
+            if (haveStartedRoute != null) {
+                repository.deleteStatistic(haveStartedRoute)
+            }
             val lastKnowLocation = locationManager.getLastKnownLocation()?.let {
                 GeoPoint(
                     latitude = it.latitude,
@@ -94,7 +98,6 @@ internal class NavigationService() : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val args = intent?.serializable<StartRouteArgs>(NAVIGATION_END_POINT)
-        println("args: $args")
         check(args != null) { "args is null" }
         startRoute(args)
         return super.onStartCommand(intent, flags, startId)

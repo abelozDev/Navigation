@@ -36,7 +36,7 @@ public interface MaplybNavigationApi {
      * false - маршрут уже начат
      * true - нет текущих маршрутов
      * */
-    public fun isStartPossible(): Boolean
+    public fun currentRouteEndPoint(): GeoPoint?
 
      /**Начало маршрута
      * @param endPoint конечная точка маршрута

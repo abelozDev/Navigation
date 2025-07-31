@@ -41,6 +41,7 @@ class NavigationFragment : Fragment(R.layout.navigation_fragment), OnMapReadyCal
 
     private lateinit var mapView: MapView
     private lateinit var startRouteButton: Button
+    private lateinit var checkButton: Button
     private lateinit var deleteRouteButton: Button
     private lateinit var buttonsLayout: LinearLayout
     private lateinit var showRoute: Button
@@ -58,6 +59,7 @@ class NavigationFragment : Fragment(R.layout.navigation_fragment), OnMapReadyCal
         super.onViewCreated(view, savedInstanceState)
         mapView = view.findViewById(R.id.mapView)
         startRouteButton = view.findViewById(R.id.routeButton)
+        checkButton = view.findViewById(R.id.checkButton)
         deleteRouteButton = view.findViewById(R.id.deleteRoute)
         showRoute = view.findViewById(R.id.showRoute)
         buttonsLayout = view.findViewById(R.id.buttonsLayout)
@@ -96,23 +98,22 @@ class NavigationFragment : Fragment(R.layout.navigation_fragment), OnMapReadyCal
             selectedLocation.value = null
             maplibreMap.clear()
         }
+        checkButton.setOnClickListener {
+            Toast.makeText(requireContext(), navigationLib.currentRouteEndPoint().toString(), Toast.LENGTH_SHORT).show()
+        }
         startRouteButton.setOnClickListener {
-            if (navigationLib.isStartPossible()) {
-                selectedLocation.value?.let {
-                    navigationLib.startRoute(
-                        GeoPoint(
-                            it.latitude,
-                            it.longitude,
-                            0.0
-                        )
-                    ) { startLocation, endLocation ->
-                        println(
-                            "startLocation: $startLocation, \nendLocation: $endLocation"
-                        )
-                    }
+            selectedLocation.value?.let {
+                navigationLib.startRoute(
+                    GeoPoint(
+                        it.latitude,
+                        it.longitude,
+                        0.0
+                    )
+                ) { startLocation, endLocation ->
+                    println(
+                        "startLocation: $startLocation, \nendLocation: $endLocation"
+                    )
                 }
-            } else {
-                Toast.makeText(requireContext(), "Уже есть начатый маршрут!", Toast.LENGTH_SHORT).show()
             }
 
         }

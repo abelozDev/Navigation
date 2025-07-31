@@ -152,7 +152,7 @@ private fun ExpandableIcon(
     AnimatedContent(
         targetState = isExpanded,
         transitionSpec = {
-            fadeIn()with fadeOut()
+            fadeIn() with fadeOut()
         },
         label = "ExpandCollapseAnimation"
     ) { targetExpanded ->
