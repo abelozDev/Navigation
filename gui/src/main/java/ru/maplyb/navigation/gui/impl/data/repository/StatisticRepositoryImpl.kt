@@ -205,6 +205,10 @@ internal class StatisticRepositoryImpl(
         }
     }
 
+    override suspend fun finishStatistic(statisticId: Int) {
+        setLifecycle(statisticId, StatisticLifecycle.END)
+    }
+
     private suspend fun updateStatistic(statistic: StatisticEntity, geoPoint: GeoPoint) {
         /**Может быть null если удалили статистику, но пришла геолокации.
          * Если lifecycle = FORCE_PAUSE, не учитываем обновление*/

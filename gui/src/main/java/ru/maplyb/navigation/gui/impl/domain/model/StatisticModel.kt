@@ -1,5 +1,6 @@
 package ru.maplyb.navigation.gui.impl.domain.model
 
+import androidx.compose.ui.graphics.Color
 import ru.maplyb.navigation.gui.api.model.GeoPoint
 import ru.maplyb.navigation.gui.api.model.RouteStatistic
 import ru.maplyb.navigation.gui.impl.data.entity.KmInHour
@@ -60,11 +61,11 @@ internal data class StatisticModel(
 * FORCE_PAUSE - пользователь поставил на паузу
 * STOPPED - сервис перестал работать, можно перезапустить
 * END - маршрут закончен*/
-internal enum class StatisticLifecycle {
-    CREATED,
-    PAUSED,
-    FORCE_PAUSE,
-    STOPPED,
-    END;
+internal enum class StatisticLifecycle(val ruName: String, val color: Color) {
+    CREATED("Начат", Color.Green),
+    PAUSED("Пауза", Color(0xffFFB02C)),
+    FORCE_PAUSE("Пауза", Color(0xffFFB02C)),
+    STOPPED("Остановлен", Color(0xffFFB02C)),
+    END("Завешен", Color.Red);
 }
 

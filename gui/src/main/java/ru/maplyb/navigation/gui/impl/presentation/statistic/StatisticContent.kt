@@ -1,18 +1,11 @@
 package ru.maplyb.navigation.gui.impl.presentation.statistic
 
-import android.R
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
-import androidx.compose.animation.with
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -22,23 +15,17 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.BottomSheetScaffoldState
 import androidx.compose.material3.Button
-import androidx.compose.material3.Divider
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalTextStyle
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -50,22 +37,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ModifierLocalBeyondBoundsLayout
-import androidx.compose.ui.layout.TestModifierUpdaterLayout
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.room.util.TableInfo
+import androidx.core.graphics.toColor
 import ru.maplyb.navigation.gui.impl.data.model.PositionDataModel
+import ru.maplyb.navigation.gui.impl.domain.model.StatisticLifecycle
 import ru.maplyb.navigation.gui.impl.domain.model.StatisticModel
-import ru.maplyb.navigation.gui.impl.ui.icons.iconCollapsed
-import ru.maplyb.navigation.gui.impl.ui.icons.iconExpand
 import ru.maplyb.navigation.gui.impl.util.calculateAzimuth
 import ru.maplyb.navigation.gui.impl.util.format.formatDistance
 import ru.maplyb.navigation.gui.impl.util.format.formatMillisecondsTime
@@ -171,7 +154,18 @@ private fun ExpandRouteStatsBottomSheet(
     Column(
         modifier = Modifier
             .fillMaxWidth()
+            .padding(horizontal = 8.dp)
     ) {
+        Text(
+            text = statistic.lifecycle.ruName,
+            style = TextStyle(
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Black,
+                textAlign = TextAlign.Center,
+                color = statistic.lifecycle.color,
+            )
+        )
+        Spacer(Modifier.height(16.dp))
         StatisticFields(
             "${azimuth}°" to "Азимут",
             distanceRemaining to "Осталось идти",
@@ -210,6 +204,24 @@ private fun ExpandRouteStatsBottomSheet(
                 )
                 Spacer(Modifier.height(16.dp))
             }
+        }
+        if (statistic.lifecycle != StatisticLifecycle.END) {
+            Button(
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xffCCCCCC),
+                    contentColor = Color(0xff1c1c1c)
+                ),
+                content = {
+                    Text(
+                        text = "Завершить"
+                    )
+                },
+                onClick = {
+                    onFinish()
+                }
+            )
+            Spacer(Modifier.height(8.dp))
         }
         Rectangle { showFull = !showFull }
     }
@@ -270,26 +282,6 @@ private fun StatisticFields(
                 )
             }
         }
-    }
-}
-
-@Composable
-private fun StatsRow(label: String, value: String) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(bottom = 16.dp),
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.bodyMedium
-        )
-        Text(
-            text = value,
-            style = MaterialTheme.typography.bodyMedium,
-            fontWeight = FontWeight.Bold
-        )
     }
 }
 

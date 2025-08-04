@@ -32,6 +32,8 @@ internal interface StatisticRepository {
 
     suspend fun resumeStatistic(statisticId: Int)
 
+    suspend fun finishStatistic(statisticId: Int)
+
     suspend fun resumeCurrentStatistic(): StatisticModel?
 
     suspend fun createEmptyStatistic(currentPosition: GeoPoint?, endPosition: GeoPoint): StatisticModel

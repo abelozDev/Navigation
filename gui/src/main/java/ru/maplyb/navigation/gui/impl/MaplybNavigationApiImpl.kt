@@ -22,14 +22,11 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import ru.maplyb.navigation.gui.api.MaplybNavigationApi
 import ru.maplyb.navigation.gui.api.NavigationLocationListener
 import ru.maplyb.navigation.gui.api.model.GeoPoint
@@ -172,7 +169,9 @@ internal object MaplybNavigationApiImpl : MaplybNavigationApi {
                 },
                 clear = {
                     scope.launch {
-                        repository.clear()
+                        currentStatistic?.id?.let {
+                            repository.finishStatistic(it)
+                        }
                     }
                 },
                 pause = {
