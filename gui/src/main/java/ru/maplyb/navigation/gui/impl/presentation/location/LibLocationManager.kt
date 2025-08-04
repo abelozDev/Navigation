@@ -53,7 +53,7 @@ private object LibLocationManagerImpl : LibLocationManager {
 
 
     override fun getLastKnownLocation(): Location? {
-        val currentProvider = provider ?: throw IllegalStateException("provider must not be null")
+        val currentProvider = provider ?: return null
         return if (ActivityCompat.checkSelfPermission(
                 application,
                 Manifest.permission.ACCESS_FINE_LOCATION
@@ -73,7 +73,12 @@ private object LibLocationManagerImpl : LibLocationManager {
         val onLocationUpdated = LocationListener { location ->
             trySend(location)
         }
-        val currentProvider = provider ?: throw IllegalStateException("Location provider not found")
+        val currentProvider = provider
+        if (currentProvider == null) {
+            close()
+            return@callbackFlow
+        }
+
         if (!PermissionHelper().checkLocationPermission(application)) throw IllegalStateException("Location permission not granted")
 
         locationManager.requestLocationUpdates(
