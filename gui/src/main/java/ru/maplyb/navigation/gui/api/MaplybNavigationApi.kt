@@ -9,6 +9,8 @@ import ru.maplyb.navigation.gui.impl.MaplybNavigationApiImpl
 public interface MaplybNavigationApi {
 
     public fun onStatisticChanged(callback: (RouteStatistic) -> Unit)
+
+    public fun onStop(callback: () -> Unit)
     /**
      * Открывает экран со статистикой
      * */

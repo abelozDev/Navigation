@@ -48,6 +48,7 @@ internal object MaplybNavigationApiImpl : MaplybNavigationApi {
     private var locationListener: NavigationLocationListener? = null
     private var globalCurrentStatistic: StatisticModel? = null
     private var onStatisticChangedCallback: ((RouteStatistic) -> Unit)? = null
+    private var onStopCallback: (() -> Unit)? = null
     private val connection = object : ServiceConnection {
         override fun onServiceConnected(className: ComponentName, service: IBinder) {
             val binder = service as NavigationService.LocalBinder
@@ -73,6 +74,10 @@ internal object MaplybNavigationApiImpl : MaplybNavigationApi {
 
     override fun onStatisticChanged(callback: (RouteStatistic) -> Unit) {
         this.onStatisticChangedCallback = callback
+    }
+
+    override fun onStop(callback: () -> Unit) {
+        this.onStopCallback = callback
     }
 
     override fun show() {
@@ -135,6 +140,7 @@ internal object MaplybNavigationApiImpl : MaplybNavigationApi {
                     println("statistic changed: $statistic")
                     if (statistic?.lifecycle == StatisticLifecycle.END) {
                         stopService()
+                        onStopCallback?.invoke()
                     }
                     currentStatistic = statistic
                     globalCurrentStatistic = statistic

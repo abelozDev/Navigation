@@ -94,6 +94,9 @@ class NavigationFragment : Fragment(R.layout.navigation_fragment), OnMapReadyCal
             init(requireActivity())
             onStatisticChanged {
             }
+            onStop {
+                println("TESTONSTOP")
+            }
         }
         initViews()
     }
@@ -119,6 +122,7 @@ class NavigationFragment : Fragment(R.layout.navigation_fragment), OnMapReadyCal
         checkButton.setOnClickListener {
             Toast.makeText(requireContext(), navigationLib.currentRouteEndPoint().toString(), Toast.LENGTH_SHORT).show()
         }
+        navigationLib
         startRouteButton.setOnClickListener {
             selectedLocation.value?.let {
                 navigationLib.startRoute(
