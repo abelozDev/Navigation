@@ -110,7 +110,7 @@ internal object MaplybNavigationApiImpl : MaplybNavigationApi {
     }
 
     override fun currentRouteEndPoint(): GeoPoint? {
-        return if (globalCurrentStatistic?.lifecycle != StatisticLifecycle.END) globalCurrentStatistic?.lastPosition else null
+        return if (globalCurrentStatistic?.lifecycle != StatisticLifecycle.END) globalCurrentStatistic?.endPoint else null
     }
 
     override fun resumeCurrentStatistic(locationListener: NavigationLocationListener) {
@@ -202,6 +202,7 @@ internal object MaplybNavigationApiImpl : MaplybNavigationApi {
     }
 
     private fun startService(args: StartRouteArgs, locationListener: NavigationLocationListener) {
+        stopService()
         NotificationChannel.create(application)
         val intent = Intent(application, NavigationService::class.java).run {
             putExtra(NavigationService.NAVIGATION_END_POINT, args)

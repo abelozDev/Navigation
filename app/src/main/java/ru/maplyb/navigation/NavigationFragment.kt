@@ -129,7 +129,7 @@ class NavigationFragment : Fragment(R.layout.navigation_fragment), OnMapReadyCal
                     )
                 ) { startLocation, endLocation ->
                     println(
-                        "startLocation: $startLocation, \nendLocation: $endLocation"
+                        "endLocation: $endLocation"
                     )
                 }
             }
