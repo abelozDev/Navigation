@@ -16,154 +16,40 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.BottomSheetScaffold
-import androidx.compose.material3.BottomSheetScaffoldState
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ModifierLocalBeyondBoundsLayout
-import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.graphics.toColor
-import ru.maplyb.navigation.gui.impl.data.model.PositionDataModel
 import ru.maplyb.navigation.gui.impl.domain.model.StatisticLifecycle
 import ru.maplyb.navigation.gui.impl.domain.model.StatisticModel
-import ru.maplyb.navigation.gui.impl.presentation.navigation.LocalRouter
-import ru.maplyb.navigation.gui.impl.presentation.navigation.NavigationScaffold
-import ru.maplyb.navigation.gui.impl.presentation.navigation.Route
-import ru.maplyb.navigation.gui.impl.presentation.navigation.Router
-import ru.maplyb.navigation.gui.impl.presentation.navigation.currentRoute
 import ru.maplyb.navigation.gui.impl.util.calculateAzimuth
 import ru.maplyb.navigation.gui.impl.util.format.formatDistance
 import ru.maplyb.navigation.gui.impl.util.format.formatMillisecondsTime
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
-internal fun StatisticContent(
-    logs: List<PositionDataModel>,
-    scaffoldState: BottomSheetScaffoldState,
-    statistic: StatisticModel?,
-    onDismissRequest: () -> Unit,
-    clear: () -> Unit,
-    pause: () -> Unit
-) {
-
-    var sheetContentHeight by remember { mutableStateOf(0.dp) }
-    val density = LocalDensity.current
-    BottomSheetScaffold(
-        scaffoldState = scaffoldState,
-        sheetSwipeEnabled = true,
-        sheetShadowElevation = 0.dp,
-        sheetShape = RoundedCornerShape(topEnd = 16.dp, topStart = 16.dp),
-        sheetTonalElevation = 0.dp,
-        sheetContainerColor = Color(0xff2C2A2A),
-        sheetDragHandle = null,
-        sheetPeekHeight = sheetContentHeight,
-        sheetContent = {
-            NavigationScaffold(
-                startDestination = Route.Statistic()
-            ) {
-                val router = LocalRouter.current
-                Column(
-                    modifier = Modifier
-                        .background(Color(0xff2C2A2A))
-                        .fillMaxWidth()
-                        .wrapContentHeight()
-                        .onGloballyPositioned { layoutCoordinates ->
-                            sheetContentHeight = with(density) {
-                                layoutCoordinates.size.height.toDp()
-                            }
-                        }
-                        .padding(16.dp)
-                ) {
-                    when (currentRoute.current) {
-                        is Route.Settings -> {
-                            SettingsScreen(
-                                onDismissRequest = onDismissRequest,
-                                pop = {
-                                    router.pop()
-                                }
-                            )
-                        }
-                        is Route.Statistic -> {
-                            StatisticScreen(
-                                statistic = statistic,
-                                onDismissRequest = onDismissRequest,
-                                clear = clear,
-                                pause = pause,
-                                toSettings = {
-                                    router.push(Route.Settings())
-                                }
-                            )
-                        }
-                    }
-                }
-            }
-        }
-    ) {}
-}
-
-@Composable
-private fun ColumnScope.SettingsScreen(
-    onDismissRequest: () -> Unit,
-    pop: () -> Unit
-) {
-    Row(
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Icon(
-            modifier = Modifier
-                .clickable {
-                    pop()
-                },
-            tint = Color.White,
-            imageVector = Icons.Default.ArrowBack,
-            contentDescription = null
-        )
-        Spacer(Modifier.weight(1f))
-        Icon(
-            modifier = Modifier
-                .clickable {
-                    onDismissRequest()
-                },
-            tint = Color.White,
-            imageVector = Icons.Default.Close,
-            contentDescription = null
-        )
-    }
-    Text("SETTINGS")
-}
-
-@Composable
-private fun ColumnScope.StatisticScreen(
+internal fun ColumnScope.StatisticScreen(
     statistic: StatisticModel?,
     onDismissRequest: () -> Unit,
     clear: () -> Unit,

@@ -1,4 +1,4 @@
-package ru.maplyb.navigation.gui.impl.data.entity
+package ru.maplyb.navigation.gui.impl.data.local.entity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey

@@ -1,4 +1,4 @@
-package ru.maplyb.navigation.gui.impl.data.database
+package ru.maplyb.navigation.gui.impl.data.local.database
 
 import android.content.Context
 import androidx.room.Room

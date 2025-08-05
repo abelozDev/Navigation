@@ -1,4 +1,4 @@
-package ru.maplyb.navigation.gui.impl.data.model
+package ru.maplyb.navigation.gui.impl.data.local.model
 
 import ru.maplyb.navigation.gui.api.model.GeoPoint
 

@@ -17,9 +17,8 @@ import kotlinx.coroutines.withContext
 import ru.maplyb.navigation.gui.api.NavigationLocationListener
 import ru.maplyb.navigation.gui.api.model.GeoPoint
 import ru.maplyb.navigation.gui.api.model.toGeoPoint
-import ru.maplyb.navigation.gui.impl.MaplybNavigationApiImpl
-import ru.maplyb.navigation.gui.impl.data.database.Database
-import ru.maplyb.navigation.gui.impl.data.database.NavigationDatabase
+import ru.maplyb.navigation.gui.impl.data.local.database.Database
+import ru.maplyb.navigation.gui.impl.data.local.database.NavigationDatabase
 import ru.maplyb.navigation.gui.impl.domain.model.StartRouteArgs
 import ru.maplyb.navigation.gui.impl.domain.repository.StatisticRepository
 import ru.maplyb.navigation.gui.impl.presentation.location.LibLocationManager
@@ -45,7 +44,7 @@ internal class NavigationService() : Service() {
         super.onCreate()
         database = Database.provideDatabase(applicationContext)
         locationManager = LibLocationManager.create(application)
-        repository = StatisticRepository.create(applicationContext)
+        repository = StatisticRepository.create(application)
     }
 
     override fun onDestroy() {

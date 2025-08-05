@@ -31,13 +31,13 @@ import ru.maplyb.navigation.gui.api.MaplybNavigationApi
 import ru.maplyb.navigation.gui.api.NavigationLocationListener
 import ru.maplyb.navigation.gui.api.model.GeoPoint
 import ru.maplyb.navigation.gui.api.model.RouteStatistic
-import ru.maplyb.navigation.gui.impl.data.model.PositionDataModel
+import ru.maplyb.navigation.gui.impl.data.local.model.PositionDataModel
 import ru.maplyb.navigation.gui.impl.domain.model.StartRouteArgs
 import ru.maplyb.navigation.gui.impl.domain.model.StatisticLifecycle
 import ru.maplyb.navigation.gui.impl.domain.model.StatisticModel
 import ru.maplyb.navigation.gui.impl.domain.repository.StatisticRepository
 import ru.maplyb.navigation.gui.impl.presentation.location.LibLocationManager
-import ru.maplyb.navigation.gui.impl.presentation.statistic.StatisticContent
+import ru.maplyb.navigation.gui.impl.presentation.main.MainBottomScaffold
 import ru.maplyb.navigation.gui.impl.service.NavigationService
 import ru.maplyb.navigation.gui.impl.service.NotificationChannel
 
@@ -142,6 +142,7 @@ internal object MaplybNavigationApiImpl : MaplybNavigationApi {
         var currentStatistic by rememberSaveable {
             mutableStateOf<StatisticModel?>(null)
         }
+        val pauseState by repository.isPauseEnabled().collectAsState(false)
         var logs by remember {
             mutableStateOf<List<PositionDataModel>>(emptyList())
         }
@@ -179,7 +180,7 @@ internal object MaplybNavigationApiImpl : MaplybNavigationApi {
 
         /**Костыль чтобы ComposeView не перекрывало карту*/
         if (visibility) {
-            StatisticContent(
+            MainBottomScaffold(
                 scaffoldState = scaffoldState,
                 statistic = currentStatistic,
                 onDismissRequest = {
@@ -195,7 +196,13 @@ internal object MaplybNavigationApiImpl : MaplybNavigationApi {
                 pause = {
                     pause()
                 },
-                logs = logs
+                logs = logs,
+                pauseState = pauseState,
+                updatePauseState = { state ->
+                    scope.launch {
+                        repository.updatePauseState(state)
+                    }
+                }
             )
         }
     }

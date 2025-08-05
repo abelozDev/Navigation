@@ -3,8 +3,8 @@ package ru.maplyb.navigation.gui.impl.domain.model
 import androidx.compose.ui.graphics.Color
 import ru.maplyb.navigation.gui.api.model.GeoPoint
 import ru.maplyb.navigation.gui.api.model.RouteStatistic
-import ru.maplyb.navigation.gui.impl.data.entity.KmInHour
-import ru.maplyb.navigation.gui.impl.data.entity.Meters
+import ru.maplyb.navigation.gui.impl.data.local.entity.KmInHour
+import ru.maplyb.navigation.gui.impl.data.local.entity.Meters
 import java.io.Serializable
 
 /**

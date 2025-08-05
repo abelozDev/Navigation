@@ -1,12 +1,11 @@
-package ru.maplyb.navigation.gui.impl.data.dao
+package ru.maplyb.navigation.gui.impl.data.local.dao
 
-import android.app.appsearch.AppSearchSchema
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import kotlinx.coroutines.flow.Flow
-import ru.maplyb.navigation.gui.impl.data.entity.PauseEntity
+import ru.maplyb.navigation.gui.impl.data.local.entity.PauseEntity
 
 @Dao
 internal interface PauseDao {

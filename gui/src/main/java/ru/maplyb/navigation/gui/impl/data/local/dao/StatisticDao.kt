@@ -1,4 +1,4 @@
-package ru.maplyb.navigation.gui.impl.data.dao
+package ru.maplyb.navigation.gui.impl.data.local.dao
 
 import androidx.room.Dao
 import androidx.room.Insert
@@ -8,8 +8,8 @@ import androidx.room.Transaction
 import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
 import ru.maplyb.navigation.gui.api.model.GeoPoint
-import ru.maplyb.navigation.gui.impl.data.entity.StatisticEntity
-import ru.maplyb.navigation.gui.impl.data.entity.StatisticWithPoints
+import ru.maplyb.navigation.gui.impl.data.local.entity.StatisticEntity
+import ru.maplyb.navigation.gui.impl.data.local.entity.StatisticWithPoints
 import ru.maplyb.navigation.gui.impl.domain.model.StatisticLifecycle
 
 @Dao

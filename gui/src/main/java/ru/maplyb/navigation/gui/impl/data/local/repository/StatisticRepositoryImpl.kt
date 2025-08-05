@@ -1,29 +1,30 @@
-package ru.maplyb.navigation.gui.impl.data.repository
+package ru.maplyb.navigation.gui.impl.data.local.repository
 
-import androidx.compose.animation.core.updateTransition
 import androidx.room.Transaction
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import ru.maplyb.navigation.gui.api.model.GeoPoint
-import ru.maplyb.navigation.gui.impl.data.database.NavigationDatabase
-import ru.maplyb.navigation.gui.impl.data.entity.Meters
-import ru.maplyb.navigation.gui.impl.data.entity.PauseEntity
-import ru.maplyb.navigation.gui.impl.data.entity.RoutePointEntity
-import ru.maplyb.navigation.gui.impl.data.entity.StatisticEntity
-import ru.maplyb.navigation.gui.impl.data.entity.StatisticEntity.Companion.END_DISTANCE
-import ru.maplyb.navigation.gui.impl.data.entity.StatisticWithPoints
-import ru.maplyb.navigation.gui.impl.data.entity.toEntity
-import ru.maplyb.navigation.gui.impl.data.model.PositionDataModel
-import ru.maplyb.navigation.gui.impl.data.model.PositionTypes
+import ru.maplyb.navigation.gui.impl.data.local.database.NavigationDatabase
+import ru.maplyb.navigation.gui.impl.data.local.entity.Meters
+import ru.maplyb.navigation.gui.impl.data.local.entity.PauseEntity
+import ru.maplyb.navigation.gui.impl.data.local.entity.RoutePointEntity
+import ru.maplyb.navigation.gui.impl.data.local.entity.StatisticEntity
+import ru.maplyb.navigation.gui.impl.data.local.entity.StatisticEntity.Companion.END_DISTANCE
+import ru.maplyb.navigation.gui.impl.data.local.entity.StatisticWithPoints
+import ru.maplyb.navigation.gui.impl.data.local.entity.toEntity
+import ru.maplyb.navigation.gui.impl.data.local.model.PositionDataModel
+import ru.maplyb.navigation.gui.impl.data.local.model.PositionTypes
+import ru.maplyb.navigation.gui.impl.domain.data_source.DataStoreSource
 import ru.maplyb.navigation.gui.impl.domain.model.StatisticLifecycle
 import ru.maplyb.navigation.gui.impl.domain.model.StatisticModel
 import ru.maplyb.navigation.gui.impl.domain.repository.StatisticRepository
 import ru.maplyb.navigation.gui.impl.util.distanceInMeters
 
 internal class StatisticRepositoryImpl(
-    private val database: NavigationDatabase
+    private val database: NavigationDatabase,
+    private val datastore: DataStoreSource
 ) : StatisticRepository {
 
     /**Тут время в пути не учитывается. Если в дальнейшем надо будет - сделать*/
@@ -45,6 +46,14 @@ internal class StatisticRepositoryImpl(
                 )
             )
         }
+    }
+
+    override suspend fun updatePauseState(state: Boolean) {
+        datastore.savePauseState(state)
+    }
+
+    override fun isPauseEnabled(): Flow<Boolean> {
+        return datastore.isPauseEnabled()
     }
 
     override suspend fun pause(statisticId: Int) {
@@ -216,7 +225,6 @@ internal class StatisticRepositoryImpl(
         val timestamp = System.currentTimeMillis()
         var isPaused = false
         val newStatistic = if (statistic.lastPosition != null) {
-
             val distanceInMeters = distanceInMeters(
                 lat1 = statistic.lastPosition.latitude,
                 lon1 = statistic.lastPosition.longitude,
@@ -299,12 +307,14 @@ internal class StatisticRepositoryImpl(
     }
 
     /**Если паузы еще нет. Нужна логика если уже пауза*/
-    private fun checkPause(
+    private suspend fun checkPause(
         statistic: StatisticEntity,
         geoPoint: GeoPoint,
         timestamp: Long,
         distanceBetween: Meters
     ): Boolean {
+        /**Есть ли учет пауз (настраивается в настройках)*/
+        if (!datastore.isPauseEnabled().first()) return false
         if (statistic.lastPosition == null || statistic.lastPointTimestamp == null) return false
         val timeBetweenPoints = timestamp - statistic.lastPointTimestamp
         val speedKmh = (distanceBetween / (timeBetweenPoints * 0.001)) / 3.6

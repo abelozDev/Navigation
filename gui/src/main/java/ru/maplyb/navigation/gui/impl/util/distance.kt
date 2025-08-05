@@ -1,7 +1,7 @@
 package ru.maplyb.navigation.gui.impl.util
 
 import ru.maplyb.navigation.gui.api.model.GeoPoint
-import ru.maplyb.navigation.gui.impl.data.entity.Meters
+import ru.maplyb.navigation.gui.impl.data.local.entity.Meters
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.pow

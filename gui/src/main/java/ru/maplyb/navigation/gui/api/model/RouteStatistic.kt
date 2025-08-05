@@ -1,6 +1,6 @@
 package ru.maplyb.navigation.gui.api.model
 
-import ru.maplyb.navigation.gui.impl.data.entity.Meters
+import ru.maplyb.navigation.gui.impl.data.local.entity.Meters
 
 /**
  * @param totalDistance - осталось пройти

@@ -54,6 +54,7 @@ publishing {
     }
 }
 dependencies {
+    implementation(libs.datastore)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.gson)
     implementation(libs.androidx.material3)

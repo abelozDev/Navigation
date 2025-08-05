@@ -1,4 +1,4 @@
-package ru.maplyb.navigation.gui.impl.data.converters
+package ru.maplyb.navigation.gui.impl.data.local.converters
 
 import androidx.room.TypeConverter
 import androidx.room.TypeConverters

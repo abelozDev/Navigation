@@ -1,6 +1,6 @@
 package ru.maplyb.navigation.gui.impl.util.format
 
-import ru.maplyb.navigation.gui.impl.data.entity.Meters
+import ru.maplyb.navigation.gui.impl.data.local.entity.Meters
 import kotlin.math.roundToInt
 
 internal fun formatDistance(distance: Meters): String {

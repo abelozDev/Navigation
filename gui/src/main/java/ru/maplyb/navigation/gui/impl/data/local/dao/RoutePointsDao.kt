@@ -1,12 +1,10 @@
-package ru.maplyb.navigation.gui.impl.data.dao
+package ru.maplyb.navigation.gui.impl.data.local.dao
 
 import androidx.room.Dao
 import androidx.room.Insert
-import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import kotlinx.coroutines.flow.Flow
-import ru.maplyb.navigation.gui.impl.data.entity.PauseEntity
-import ru.maplyb.navigation.gui.impl.data.entity.RoutePointEntity
+import ru.maplyb.navigation.gui.impl.data.local.entity.RoutePointEntity
 
 @Dao
 internal interface RoutePointsDao {
