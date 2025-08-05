@@ -106,7 +106,11 @@ internal object MaplybNavigationApiImpl : MaplybNavigationApi {
     override fun pause() {
         globalCurrentStatistic?.let {
             scope.launch {
-                repository.forcePause(it.id)
+                if (it.lifecycle == StatisticLifecycle.FORCE_PAUSE) {
+                    repository.resumeStatistic(it.id)
+                } else {
+                    repository.forcePause(it.id)
+                }
             }
         }
     }

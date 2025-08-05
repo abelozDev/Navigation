@@ -66,6 +66,6 @@ internal enum class StatisticLifecycle(val ruName: String, val color: Color) {
     PAUSED("Пауза", Color(0xffFFB02C)),
     FORCE_PAUSE("Пауза", Color(0xffFFB02C)),
     STOPPED("Остановлен", Color(0xffFFB02C)),
-    END("Завешен", Color.Red);
+    END("Завершен", Color.Red);
 }
 

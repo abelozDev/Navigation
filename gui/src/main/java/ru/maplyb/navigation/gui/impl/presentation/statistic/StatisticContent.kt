@@ -6,6 +6,7 @@ import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -37,6 +38,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ModifierLocalBeyondBoundsLayout
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
@@ -206,21 +208,47 @@ private fun ExpandRouteStatsBottomSheet(
             }
         }
         if (statistic.lifecycle != StatisticLifecycle.END) {
-            Button(
+            val (pauseButtonText, pauseButtonTextColor) = when(statistic.lifecycle) {
+                StatisticLifecycle.FORCE_PAUSE -> "Возобновить" to Color.Green
+                else -> "Пауза" to Color(0xffFFB02C)
+            }
+            Row(
                 modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xffCCCCCC),
-                    contentColor = Color(0xff1c1c1c)
-                ),
-                content = {
-                    Text(
-                        text = "Завершить"
-                    )
-                },
-                onClick = {
-                    onFinish()
-                }
-            )
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Button(
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(8.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xffEA1019),
+                        contentColor = Color.White
+                    ),
+                    content = {
+                        Text(
+                            text = "Завершить"
+                        )
+                    },
+                    onClick = {
+                        onFinish()
+                    }
+                )
+                Button(
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(8.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = pauseButtonTextColor,
+                        contentColor = Color.Black
+                    ),
+                    content = {
+                        Text(
+                            text = pauseButtonText
+                        )
+                    },
+                    onClick = {
+                        onPause()
+                    }
+                )
+            }
             Spacer(Modifier.height(8.dp))
         }
         Rectangle { showFull = !showFull }
