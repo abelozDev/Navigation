@@ -52,6 +52,7 @@ internal class NavigationService() : Service() {
         super.onDestroy()
         coroutineScope.cancel()
         locationListener = null
+        println("TEST SERVICE onDestroy")
     }
 
 
@@ -67,22 +68,27 @@ internal class NavigationService() : Service() {
         fun getService(): NavigationService = this@NavigationService
     }
 
-    private fun startRoute(args: StartRouteArgs) {
+    private fun startRoute(args: StartRouteArgs, redelivery: Boolean) {
         coroutineScope.launch {
             statisticId = if (args.statisticId == null) {
                 val haveStartedRoute = repository.getLastStatistic().first()
-                if (haveStartedRoute != null) {
-                    repository.deleteStatistic(haveStartedRoute)
+                if (redelivery && haveStartedRoute != null) {
+                    haveStartedRoute.id
+                } else {
+                    if (haveStartedRoute != null) {
+                        repository.deleteStatistic(haveStartedRoute)
+                    }
+                    val lastKnowLocation = locationManager.getLastKnownLocation()?.let {
+                        GeoPoint(
+                            latitude = it.latitude,
+                            longitude = it.longitude,
+                            altitude = it.altitude
+                        )
+                    }
+                    repository.createEmptyStatistic(lastKnowLocation, args.endPoint).id
                 }
-                val lastKnowLocation = locationManager.getLastKnownLocation()?.let {
-                    GeoPoint(
-                        latitude = it.latitude,
-                        longitude = it.longitude,
-                        altitude = it.altitude
-                    )
-                }
-                repository.createEmptyStatistic(lastKnowLocation, args.endPoint).id
             } else args.statisticId
+
             startForeground(
                 NAVIGATION_NOTIFICATION_ID,
                 createNotification(
@@ -95,7 +101,7 @@ internal class NavigationService() : Service() {
                     .init()
                     .collect { location ->
                         ensureActive()
-                        println("service work $location")
+                        println("TEST SERVICE work $location")
                         check(statisticId != null) { "statistic id is null" }
                         repository.updateLastPosition(statisticId!!, location.toGeoPoint())
                         locationListener?.locationUpdated(
@@ -114,8 +120,10 @@ internal class NavigationService() : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val args = intent?.serializable<StartRouteArgs>(NAVIGATION_END_POINT)
         check(args != null) { "args is null" }
-        startRoute(args)
-        return super.onStartCommand(intent, flags, startId)
+        val isRedelivered = flags and START_FLAG_REDELIVERY != 0
+        startRoute(args, isRedelivered)
+        println("TEST SERVICE onStartCommand $args")
+        return START_REDELIVER_INTENT
     }
 
     private fun createNotification(

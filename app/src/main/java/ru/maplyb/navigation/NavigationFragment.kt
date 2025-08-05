@@ -108,21 +108,19 @@ class NavigationFragment : Fragment(R.layout.navigation_fragment), OnMapReadyCal
         stopButton.setOnClickListener {
             navigationLib.stopStatistic()
         }
-        resumeButton.setOnClickListener {
-            navigationLib.resumeCurrentStatistic { startLocation, endLocation ->
-                println(
-                    "resume startLocation: $startLocation, \nendLocation: $endLocation"
-                )
-            }
-        }
         deleteRouteButton.setOnClickListener {
             selectedLocation.value = null
             maplibreMap.clear()
         }
         checkButton.setOnClickListener {
-            Toast.makeText(requireContext(), navigationLib.currentRouteEndPoint().toString(), Toast.LENGTH_SHORT).show()
+            Toast.makeText(
+                requireContext(),
+                navigationLib.currentRouteEndPoint().toString(),
+                Toast.LENGTH_SHORT
+            ).show()
         }
-        navigationLib
+        navigationLib.setLocationListener { startLocation, endLocation -> println("endLocation: $endLocation") }
+
         startRouteButton.setOnClickListener {
             selectedLocation.value?.let {
                 navigationLib.startRoute(
@@ -131,13 +129,8 @@ class NavigationFragment : Fragment(R.layout.navigation_fragment), OnMapReadyCal
                         it.longitude,
                         0.0
                     )
-                ) { startLocation, endLocation ->
-                    println(
-                        "endLocation: $endLocation"
-                    )
-                }
+                )
             }
-
         }
         showRoute.setOnClickListener {
             navigationLib.show()

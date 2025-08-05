@@ -10,6 +10,7 @@ public interface MaplybNavigationApi {
 
     public fun onStatisticChanged(callback: (RouteStatistic) -> Unit)
 
+    public fun setLocationListener(locationListener: NavigationLocationListener)
     public fun onStop(callback: () -> Unit)
     /**
      * Открывает экран со статистикой
@@ -38,7 +39,7 @@ public interface MaplybNavigationApi {
     /**Останавливает статистику (эмитация остановки сервиса)*/
     public fun stopStatistic()
     /**Возобновить последнюю статистику*/
-    public fun resumeCurrentStatistic(locationListener: NavigationLocationListener)
+    public fun resumeCurrentStatistic()
     /**Возвращает [GeoPoint] конечной точки, если есть начаный маршрут. Если нет - null */
     public fun currentRouteEndPoint(): GeoPoint?
 
@@ -47,7 +48,8 @@ public interface MaplybNavigationApi {
      * @param locationListener возвращает начальную и конечную точки для посторения маршрута
      *
      * @throws IllegalStateException если есть начатый но не законченный маршрут*/
-    public fun startRoute(endPoint: GeoPoint, locationListener: NavigationLocationListener): Unit
+    public fun startRoute(endPoint: GeoPoint): Unit
+
 
     public companion object {
         public fun create(): MaplybNavigationApi = MaplybNavigationApiImpl
