@@ -9,6 +9,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -18,7 +19,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.BottomSheetScaffoldState
 import androidx.compose.material3.Button
@@ -28,11 +31,13 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -51,6 +56,11 @@ import androidx.core.graphics.toColor
 import ru.maplyb.navigation.gui.impl.data.model.PositionDataModel
 import ru.maplyb.navigation.gui.impl.domain.model.StatisticLifecycle
 import ru.maplyb.navigation.gui.impl.domain.model.StatisticModel
+import ru.maplyb.navigation.gui.impl.presentation.navigation.LocalRouter
+import ru.maplyb.navigation.gui.impl.presentation.navigation.NavigationScaffold
+import ru.maplyb.navigation.gui.impl.presentation.navigation.Route
+import ru.maplyb.navigation.gui.impl.presentation.navigation.Router
+import ru.maplyb.navigation.gui.impl.presentation.navigation.currentRoute
 import ru.maplyb.navigation.gui.impl.util.calculateAzimuth
 import ru.maplyb.navigation.gui.impl.util.format.formatDistance
 import ru.maplyb.navigation.gui.impl.util.format.formatMillisecondsTime
@@ -65,61 +75,144 @@ internal fun StatisticContent(
     clear: () -> Unit,
     pause: () -> Unit
 ) {
-    var showLog by remember {
-        mutableStateOf(false)
-    }
+
     var sheetContentHeight by remember { mutableStateOf(0.dp) }
     val density = LocalDensity.current
     BottomSheetScaffold(
         scaffoldState = scaffoldState,
         sheetSwipeEnabled = true,
         sheetShadowElevation = 0.dp,
+        sheetShape = RoundedCornerShape(topEnd = 16.dp, topStart = 16.dp),
         sheetTonalElevation = 0.dp,
         sheetContainerColor = Color(0xff2C2A2A),
-        sheetPeekHeight = sheetContentHeight + 56.dp,
+        sheetDragHandle = null,
+        sheetPeekHeight = sheetContentHeight,
         sheetContent = {
-            Column(
-                modifier = Modifier
-                    .background(Color(0xff2C2A2A))
-                    .fillMaxWidth()
-                    .wrapContentHeight()
-                    .padding(horizontal = 16.dp)
-                    .onGloballyPositioned { layoutCoordinates ->
-                        sheetContentHeight = with(density) {
-                            layoutCoordinates.size.height.toDp()
+            NavigationScaffold(
+                startDestination = Route.Statistic()
+            ) {
+                val router = LocalRouter.current
+                Column(
+                    modifier = Modifier
+                        .background(Color(0xff2C2A2A))
+                        .fillMaxWidth()
+                        .wrapContentHeight()
+                        .onGloballyPositioned { layoutCoordinates ->
+                            sheetContentHeight = with(density) {
+                                layoutCoordinates.size.height.toDp()
+                            }
+                        }
+                        .padding(16.dp)
+                ) {
+                    when (currentRoute.current) {
+                        is Route.Settings -> {
+                            SettingsScreen(
+                                onDismissRequest = onDismissRequest,
+                                pop = {
+                                    router.pop()
+                                }
+                            )
+                        }
+                        is Route.Statistic -> {
+                            StatisticScreen(
+                                statistic = statistic,
+                                onDismissRequest = onDismissRequest,
+                                clear = clear,
+                                pause = pause,
+                                toSettings = {
+                                    router.push(Route.Settings())
+                                }
+                            )
                         }
                     }
-            ) {
-                Icon(
-                    modifier = Modifier
-                        .align(Alignment.End)
-                        .clickable {
-                            onDismissRequest()
-                        },
-                    tint = Color.White,
-                    imageVector = Icons.Default.Close,
-                    contentDescription = null
-                )
-                Spacer(Modifier.height(8.dp))
-                if (statistic != null) {
-                    ExpandRouteStatsBottomSheet(
-                        statistic = statistic,
-                        onPause = pause,
-                        onFinish = clear,
-                        changeShowLigState = {
-                            showLog = !showLog
-                        }
-                    )
-                } else {
-                    Text(
-                        text = "Статистика пуста",
-                        fontSize = 24.sp
-                    )
                 }
             }
-
         }
     ) {}
+}
+
+@Composable
+private fun ColumnScope.SettingsScreen(
+    onDismissRequest: () -> Unit,
+    pop: () -> Unit
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Icon(
+            modifier = Modifier
+                .clickable {
+                    pop()
+                },
+            tint = Color.White,
+            imageVector = Icons.Default.ArrowBack,
+            contentDescription = null
+        )
+        Spacer(Modifier.weight(1f))
+        Icon(
+            modifier = Modifier
+                .clickable {
+                    onDismissRequest()
+                },
+            tint = Color.White,
+            imageVector = Icons.Default.Close,
+            contentDescription = null
+        )
+    }
+    Text("SETTINGS")
+}
+
+@Composable
+private fun ColumnScope.StatisticScreen(
+    statistic: StatisticModel?,
+    onDismissRequest: () -> Unit,
+    clear: () -> Unit,
+    pause: () -> Unit,
+    toSettings: () -> Unit
+) {
+    var showLog by remember {
+        mutableStateOf(false)
+    }
+    Row(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Icon(
+            modifier = Modifier
+                .clickable {
+                    toSettings()
+                },
+            tint = Color.White,
+            imageVector = Icons.Default.Settings,
+            contentDescription = null
+        )
+        Spacer(Modifier.weight(1f))
+        Icon(
+            modifier = Modifier
+                .clickable {
+                    onDismissRequest()
+                },
+            tint = Color.White,
+            imageVector = Icons.Default.Close,
+            contentDescription = null
+        )
+    }
+
+    Spacer(Modifier.height(8.dp))
+    if (statistic != null) {
+        ExpandRouteStatsBottomSheet(
+            statistic = statistic,
+            onPause = pause,
+            onFinish = clear,
+            changeShowLigState = {
+                showLog = !showLog
+            }
+        )
+    } else {
+        Text(
+            text = "Статистика пуста",
+            fontSize = 24.sp
+        )
+    }
 }
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -208,7 +301,7 @@ private fun ExpandRouteStatsBottomSheet(
             }
         }
         if (statistic.lifecycle != StatisticLifecycle.END) {
-            val (pauseButtonText, pauseButtonTextColor) = when(statistic.lifecycle) {
+            val (pauseButtonText, pauseButtonTextColor) = when (statistic.lifecycle) {
                 StatisticLifecycle.FORCE_PAUSE -> "Возобновить" to Color.Green
                 else -> "Пауза" to Color(0xffFFB02C)
             }
@@ -305,7 +398,7 @@ private fun StatisticFields(
                 Text(
                     text = value.second,
                     style = textStyle.copy(
-                        fontSize = textStyle.fontSize/1.5,
+                        fontSize = textStyle.fontSize / 1.5,
                         color = Color.White
                     )
                 )
