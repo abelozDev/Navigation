@@ -269,14 +269,15 @@ private fun StatisticFields(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = value.second,
+                    text = value.first,
                     style = textStyle.copy(
                         color = Color.White
                     )
                 )
                 Text(
-                    text = value.first,
+                    text = value.second,
                     style = textStyle.copy(
+                        fontSize = textStyle.fontSize/1.5,
                         color = Color.White
                     )
                 )
