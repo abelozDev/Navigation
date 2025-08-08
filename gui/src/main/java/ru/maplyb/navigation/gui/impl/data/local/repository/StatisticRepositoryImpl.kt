@@ -16,6 +16,7 @@ import ru.maplyb.navigation.gui.impl.data.local.entity.StatisticWithPoints
 import ru.maplyb.navigation.gui.impl.data.local.entity.toEntity
 import ru.maplyb.navigation.gui.impl.data.local.model.PositionDataModel
 import ru.maplyb.navigation.gui.impl.data.local.model.PositionTypes
+import ru.maplyb.navigation.gui.impl.data.use_cases.calculateSpeedKph
 import ru.maplyb.navigation.gui.impl.domain.data_source.DataStoreSource
 import ru.maplyb.navigation.gui.impl.domain.model.StatisticLifecycle
 import ru.maplyb.navigation.gui.impl.domain.model.StatisticModel
@@ -32,7 +33,8 @@ internal class StatisticRepositoryImpl(
         return database.statisticDao().getAllFlow().map { list ->
             list.map {
                 it.toModel(
-                    0
+                    0,
+                    currentSpeed = 0.0
                 )
             }
         }
@@ -85,7 +87,8 @@ internal class StatisticRepositoryImpl(
         return combine(
             database.statisticDao().getByIdFlow(id),
             database.pauseDao().getPausesByStatistic(id),
-        ) { statistic, pauses ->
+            database.routePointsDao().getRoutePointsFlow(id)
+        ) { statistic, pauses, routePoints ->
             val timestamp = System.currentTimeMillis()
             val travelTime = pauses
                 .groupBy { it.pauseNumber }
@@ -93,8 +96,6 @@ internal class StatisticRepositoryImpl(
                     val sorted = it.value.sortedBy { value -> value.timestamp }
                     val first = sorted.firstOrNull()?.timestamp ?: 0
                     val last = sorted.lastOrNull()?.timestamp ?: 0
-                    println("first: $first")
-                    println("last: $last")
                     last - first
                 }
                 .sum()
@@ -102,7 +103,9 @@ internal class StatisticRepositoryImpl(
                     if (statistic?.startTime == null) return@let 0
                     timestamp - statistic.startTime - allPausesTime
                 }
-            statistic?.toModel(travelTime)
+
+            val currentSpeed = calculateSpeedKph(routePoints.takeLast(10))
+            statistic?.toModel(travelTime, currentSpeed)
 
         }
     }
@@ -140,7 +143,8 @@ internal class StatisticRepositoryImpl(
                     .let { allPausesTime ->
                         timestamp - statistic.startTime - allPausesTime
                     }
-                statistic.toModel((travelTime / 1000) * 1000)
+                val currentSpeed = calculateSpeedKph(statWithPoints.points.takeLast(10))
+                statistic.toModel((travelTime / 1000) * 1000, currentSpeed)
             }
     }
 
@@ -165,7 +169,7 @@ internal class StatisticRepositoryImpl(
             endPoint = endPosition,
             startPosition = currentPosition
         )
-        return insertAndGet(statistic).toModel(0)
+        return insertAndGet(statistic).toModel(0, 0.0)
     }
 
     override fun logsFlow(statisticId: Int): Flow<List<PositionDataModel>> {

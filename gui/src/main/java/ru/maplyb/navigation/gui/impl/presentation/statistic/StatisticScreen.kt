@@ -132,6 +132,10 @@ private fun ExpandRouteStatsBottomSheet(
     val averageSpeed by remember(statistic.averageSpeed) {
         mutableStateOf("${statistic.averageSpeed}")
     }
+    val currentSpeed by remember(statistic.currentSpeed) {
+        mutableStateOf("${statistic.currentSpeed}")
+    }
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -166,8 +170,8 @@ private fun ExpandRouteStatsBottomSheet(
                     .fillMaxWidth()
             ) {
                 StatisticFields(
-                    averageSpeed to "Средняя скорость,км/ч",
                     distancePassed to "Пройдено",
+                    currentSpeed to "Текущая скорость, км/ч",
                     textStyle = TextStyle(
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Black,
@@ -177,6 +181,7 @@ private fun ExpandRouteStatsBottomSheet(
                 Spacer(Modifier.height(16.dp))
                 StatisticFields(
                     timeElapsed to "Время в пути",
+                    averageSpeed to "Средняя скорость, км/ч",
                     textStyle = TextStyle(
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Black,

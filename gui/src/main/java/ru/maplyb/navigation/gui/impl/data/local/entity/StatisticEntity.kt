@@ -35,10 +35,11 @@ internal data class StatisticEntity(
     val currentSpeed: KmInHour = 0.0,
     val lifecycle: StatisticLifecycle = StatisticLifecycle.CREATED
 ) {
-    fun toModel(travelTime: Long): StatisticModel {
+    fun toModel(travelTime: Long, currentSpeed: KmInHour): StatisticModel {
 
         val hours = travelTime.toDouble() / (1000 * 60 * 60)
         val averageSpeed = String.format(Locale.US, "%.1f", (leftToDo / 1000.0) / hours).toDouble()
+        val currentSpeed = String.format(Locale.US, "%.1f", currentSpeed).toDouble()
 
         val totalDistance = lastPosition?.let { distanceInMeters(it, endPoint) } ?: 0
 
@@ -49,7 +50,7 @@ internal data class StatisticEntity(
             leftToDo = leftToDo,
             lastPosition = lastPosition,
             endPoint = endPoint,
-            averageSpeed = averageSpeed,
+            averageSpeed = if (averageSpeed.isNaN()) 0.0 else averageSpeed,
             currentSpeed = currentSpeed,
             lifecycle = lifecycle,
             startPosition = startPosition,

@@ -13,7 +13,7 @@ internal fun NavigationScaffold(
     val localCurrentRoute = router.currentRouteStack.value.last()
     CompositionLocalProvider(
         LocalRouter provides router,
-        currentRoute provides localCurrentRoute
+        LocalCurrentRoute provides localCurrentRoute
     ) {
         content()
     }

@@ -24,7 +24,7 @@ internal class Router(
     }
 }
 
-internal val currentRoute = staticCompositionLocalOf<Route> {
+internal val LocalCurrentRoute = staticCompositionLocalOf<Route> {
     error("No Route provided")
 }
 internal val LocalRouter = staticCompositionLocalOf<Router> {

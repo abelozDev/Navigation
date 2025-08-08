@@ -25,7 +25,7 @@ import ru.maplyb.navigation.gui.impl.domain.model.StatisticModel
 import ru.maplyb.navigation.gui.impl.presentation.navigation.LocalRouter
 import ru.maplyb.navigation.gui.impl.presentation.navigation.NavigationScaffold
 import ru.maplyb.navigation.gui.impl.presentation.navigation.Route
-import ru.maplyb.navigation.gui.impl.presentation.navigation.currentRoute
+import ru.maplyb.navigation.gui.impl.presentation.navigation.LocalCurrentRoute
 import ru.maplyb.navigation.gui.impl.presentation.settings.SettingsScreen
 import ru.maplyb.navigation.gui.impl.presentation.statistic.StatisticScreen
 
@@ -70,7 +70,7 @@ internal fun MainBottomScaffold(
                         }
                         .padding(16.dp)
                 ) {
-                    when (currentRoute.current) {
+                    when (LocalCurrentRoute.current) {
                         is Route.Settings -> {
                             SettingsScreen(
                                 onDismissRequest = onDismissRequest,
