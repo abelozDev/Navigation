@@ -5,6 +5,7 @@ plugins {
     id("maven-publish")
     alias(libs.plugins.kotlin.compose)
     kotlin("plugin.serialization") version "2.0.20"
+    id("kotlin-parcelize")
 }
 
 android {

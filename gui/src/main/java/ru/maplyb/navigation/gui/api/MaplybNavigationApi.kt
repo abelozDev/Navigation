@@ -11,6 +11,7 @@ public interface MaplybNavigationApi {
     public fun onStatisticChanged(callback: (RouteStatistic) -> Unit)
 
     public fun setLocationListener(locationListener: NavigationLocationListener)
+    public fun resetLocationListener()
     public fun onStop(callback: () -> Unit)
     /**
      * Открывает экран со статистикой

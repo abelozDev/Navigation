@@ -45,6 +45,7 @@ tasks.withType<KotlinJvmCompile>().configureEach {
     }
 }
 dependencies {
+//    implementation("com.github.abelozDev:Navigation:0.0.5")
     implementation(project(":gui"))
     implementation(libs.maplibre)
     implementation(libs.androidx.navigation.fragment.ktx)

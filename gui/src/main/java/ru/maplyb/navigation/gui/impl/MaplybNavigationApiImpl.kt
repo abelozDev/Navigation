@@ -82,6 +82,10 @@ internal object MaplybNavigationApiImpl : MaplybNavigationApi {
         this@MaplybNavigationApiImpl.locationListener = locationListener
     }
 
+    override fun resetLocationListener() {
+        this@MaplybNavigationApiImpl.locationListener = null
+    }
+
     override fun onStop(callback: () -> Unit) {
         this.onStopCallback = callback
     }

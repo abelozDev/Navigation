@@ -2,6 +2,7 @@ package ru.maplyb.navigation.gui.impl.presentation.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
 
 @Composable
@@ -9,8 +10,11 @@ internal fun NavigationScaffold(
     startDestination: Route,
     content: @Composable () -> Unit
 ) {
-    val router = rememberSaveable { Router(startDestination) }
+    val router = rememberSaveable(
+        saver = RouterSaver
+    ) { Router(startDestination) }
     val localCurrentRoute = router.currentRouteStack.value.last()
+
     CompositionLocalProvider(
         LocalRouter provides router,
         LocalCurrentRoute provides localCurrentRoute
@@ -18,3 +22,12 @@ internal fun NavigationScaffold(
         content()
     }
 }
+
+private val RouterSaver = Saver<Router, List<Route>>(
+    save = { router ->
+        router.currentRouteStack.value
+    },
+    restore = { restore ->
+        Router(*restore.toTypedArray())
+    }
+)
