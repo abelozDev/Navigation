@@ -23,7 +23,7 @@ import kotlin.math.log
 internal interface LibLocationManager {
 
     fun getLastKnownLocation(): Location?
-    fun init(): Flow<Location>
+    fun init(): Flow<Result<Location>>
     companion object {
         fun create(application: Application): LibLocationManager {
             return LibLocationManagerImpl.create(application)
@@ -66,12 +66,11 @@ private object LibLocationManagerImpl : LibLocationManager {
         } else {
             locationManager.getLastKnownLocation(currentProvider)
         }
-
     }
 
-    override fun init(): Flow<Location> = callbackFlow {
+    override fun init(): Flow<Result<Location>> = callbackFlow {
         val onLocationUpdated = LocationListener { location ->
-            trySend(location)
+            trySend(Result.success(location))
         }
         val currentProvider = provider
         if (currentProvider == null) {
@@ -79,10 +78,13 @@ private object LibLocationManagerImpl : LibLocationManager {
             return@callbackFlow
         }
 
-        if (!PermissionHelper().checkLocationPermission(application)) throw IllegalStateException("Location permission not granted")
+        if (!PermissionHelper().checkLocationPermission(application)) {
+            trySend(Result.failure(IllegalStateException("location permission not granted")))
+            close()
+        }
 
         locationManager.requestLocationUpdates(
-            currentProvider, 2_000, 0f, onLocationUpdated,
+            currentProvider, 1_000, 0f, onLocationUpdated,
             null
         )
         awaitClose {

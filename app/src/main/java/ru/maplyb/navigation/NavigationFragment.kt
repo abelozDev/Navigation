@@ -34,7 +34,6 @@ import org.maplibre.android.maps.OnMapReadyCallback
 import org.maplibre.android.maps.Style
 import org.maplibre.android.util.TileServerOptions
 import ru.maplyb.navigation.gui.api.MaplybNavigationApi
-import ru.maplyb.navigation.gui.api.NavigationLocationListener
 import ru.maplyb.navigation.gui.api.model.GeoPoint
 
 class NavigationFragment : Fragment(R.layout.navigation_fragment), OnMapReadyCallback {

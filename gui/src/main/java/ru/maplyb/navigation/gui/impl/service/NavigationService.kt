@@ -59,6 +59,7 @@ internal class NavigationService() : Service() {
         stopForeground(STOP_FOREGROUND_REMOVE)
         stopSelf()
     }
+
     fun setLocationListener(listener: NavigationLocationListener) {
         this.locationListener = listener
     }
@@ -100,17 +101,26 @@ internal class NavigationService() : Service() {
                     .init()
                     .collect { location ->
                         ensureActive()
-                        println("TEST SERVICE work $location")
                         check(statisticId != null) { "statistic id is null" }
-                        repository.updateLastPosition(statisticId!!, location.toGeoPoint())
-                        locationListener?.locationUpdated(
-                            startLocation = GeoPoint(
-                                latitude = location.latitude,
-                                longitude = location.longitude,
-                                altitude = location.altitude
-                            ),
-                            endLocation = args.endPoint
-                        )
+                        location
+                            .onSuccess {
+                                repository.updateLastPosition(
+                                    statisticId!!,
+                                    it.toGeoPoint()
+                                )
+                                locationListener?.locationUpdated(
+                                    startLocation = GeoPoint(
+                                        latitude = it.latitude,
+                                        longitude = it.longitude,
+                                        altitude = it.altitude
+                                    ),
+                                    endLocation = args.endPoint
+                                )
+
+                            }
+                            .onFailure {
+                                locationListener?.onFailure(it.message ?: "Геолокация недоступна")
+                            }
                     }
             }
         }
