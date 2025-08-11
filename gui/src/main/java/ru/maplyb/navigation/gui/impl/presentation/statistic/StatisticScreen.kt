@@ -19,6 +19,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -235,7 +237,16 @@ private fun ExpandRouteStatsBottomSheet(
             }
             Spacer(Modifier.height(8.dp))
         }
-        Rectangle { showFull = !showFull }
+        val icon = if (showFull) Icons.Default.KeyboardArrowDown else Icons.Default.KeyboardArrowUp
+        Icon(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable {
+                showFull = !showFull
+            },
+            imageVector = icon,
+            contentDescription = null
+        )
     }
 }
 

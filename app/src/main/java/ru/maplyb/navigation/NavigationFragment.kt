@@ -34,6 +34,7 @@ import org.maplibre.android.maps.OnMapReadyCallback
 import org.maplibre.android.maps.Style
 import org.maplibre.android.util.TileServerOptions
 import ru.maplyb.navigation.gui.api.MaplybNavigationApi
+import ru.maplyb.navigation.gui.api.NavigationLocationListener
 import ru.maplyb.navigation.gui.api.model.GeoPoint
 
 class NavigationFragment : Fragment(R.layout.navigation_fragment), OnMapReadyCallback {
@@ -118,7 +119,19 @@ class NavigationFragment : Fragment(R.layout.navigation_fragment), OnMapReadyCal
                 Toast.LENGTH_SHORT
             ).show()
         }
-        navigationLib.setLocationListener { startLocation, endLocation -> println("endLocation: $endLocation") }
+        navigationLib.setLocationListener(object : NavigationLocationListener {
+            override fun locationUpdated(
+                startLocation: GeoPoint,
+                endLocation: GeoPoint
+            ) {
+
+            }
+
+            override fun onFailure(message: String) {
+
+            }
+        }
+        )
 
         startRouteButton.setOnClickListener {
             selectedLocation.value?.let {
