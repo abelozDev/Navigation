@@ -80,6 +80,7 @@ internal object MaplybNavigationApiImpl : MaplybNavigationApi {
 
     override fun setLocationListener(locationListener: NavigationLocationListener) {
         this@MaplybNavigationApiImpl.locationListener = locationListener
+        mService?.setLocationListener(this@MaplybNavigationApiImpl.locationListener!!)
     }
 
     override fun resetLocationListener() {
@@ -212,11 +213,11 @@ internal object MaplybNavigationApiImpl : MaplybNavigationApi {
     }
 
     private fun resumeRoute(endPoint: GeoPoint, statisticId: Int) {
-        startService(StartRouteArgs(endPoint, statisticId, true))
+        startService(StartRouteArgs(endPoint, statisticId))
     }
 
     override fun startRoute(endPoint: GeoPoint) {
-        startService(StartRouteArgs(endPoint, null, false))
+        startService(StartRouteArgs(endPoint, null))
     }
 
     private fun stopService() {

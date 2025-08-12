@@ -56,7 +56,7 @@ internal class NavigationService() : Service() {
 
 
     fun stopServiceFromClient() {
-        stopForeground(STOP_FOREGROUND_REMOVE)
+        /*stopForeground(STOP_FOREGROUND_REMOVE)*/
         stopSelf()
     }
 
@@ -68,11 +68,11 @@ internal class NavigationService() : Service() {
         fun getService(): NavigationService = this@NavigationService
     }
 
-    private fun startRoute(args: StartRouteArgs) {
+    private fun startRoute(args: StartRouteArgs, isRedelivered: Boolean) {
         coroutineScope.launch {
             statisticId = if (args.statisticId == null) {
                 val haveStartedRoute = repository.getLastStatistic().first()
-                if (args.isResume && haveStartedRoute != null) {
+                if (isRedelivered && haveStartedRoute != null) {
                     haveStartedRoute.id
                 } else {
                     if (haveStartedRoute != null) {
@@ -89,13 +89,13 @@ internal class NavigationService() : Service() {
                 }
             } else args.statisticId
 
-            startForeground(
+            /*startForeground(
                 NAVIGATION_NOTIFICATION_ID,
                 createNotification(
                     title = "Маршрут",
                     description = ""
                 )
-            )
+            )*/
             withContext(Dispatchers.Main) {
                 locationManager
                     .init()
@@ -129,7 +129,8 @@ internal class NavigationService() : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val args = intent?.serializable<StartRouteArgs>(NAVIGATION_END_POINT)
         check(args != null) { "args is null" }
-        startRoute(args)
+        val isRedelivered = flags and START_FLAG_REDELIVERY != 0
+        startRoute(args, isRedelivered)
         println("TEST SERVICE onStartCommand $args")
         return START_REDELIVER_INTENT
     }
