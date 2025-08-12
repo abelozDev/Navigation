@@ -212,11 +212,11 @@ internal object MaplybNavigationApiImpl : MaplybNavigationApi {
     }
 
     private fun resumeRoute(endPoint: GeoPoint, statisticId: Int) {
-        startService(StartRouteArgs(endPoint, statisticId))
+        startService(StartRouteArgs(endPoint, statisticId, true))
     }
 
     override fun startRoute(endPoint: GeoPoint) {
-        startService(StartRouteArgs(endPoint, null))
+        startService(StartRouteArgs(endPoint, null, false))
     }
 
     private fun stopService() {

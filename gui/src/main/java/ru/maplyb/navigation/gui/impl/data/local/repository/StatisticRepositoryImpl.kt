@@ -65,6 +65,7 @@ internal class StatisticRepositoryImpl(
     override suspend fun forcePause(statisticId: Int) {
         setLifecycle(statisticId, StatisticLifecycle.FORCE_PAUSE)
     }
+
     override suspend fun stopStatistic(statisticId: Int) {
         setLifecycle(statisticId, StatisticLifecycle.STOPPED)
     }
@@ -74,11 +75,15 @@ internal class StatisticRepositoryImpl(
     }
 
     override suspend fun resumeCurrentStatistic(): StatisticModel? {
-        return database.statisticDao().getStatisticByLifecycleState(StatisticLifecycle.STOPPED)?.let {
-            resumeStatistic(it.id)
-            getStatisticByIdFlow(it.id).first()
-        }
+        return database
+            .statisticDao()
+            .getStatisticByLifecycleState(StatisticLifecycle.CREATED)
+            ?.let {
+                resumeStatistic(it.id)
+                getStatisticByIdFlow(it.id).first()
+            }
     }
+
     override suspend fun clear() {
         database.statisticDao().clear()
     }
@@ -147,7 +152,6 @@ internal class StatisticRepositoryImpl(
                 statistic.toModel((travelTime / 1000) * 1000, currentSpeed)
             }
     }
-
 
 
     override suspend fun checkStartRouteIsPossible(): Boolean {

@@ -68,11 +68,11 @@ internal class NavigationService() : Service() {
         fun getService(): NavigationService = this@NavigationService
     }
 
-    private fun startRoute(args: StartRouteArgs, redelivery: Boolean) {
+    private fun startRoute(args: StartRouteArgs) {
         coroutineScope.launch {
             statisticId = if (args.statisticId == null) {
                 val haveStartedRoute = repository.getLastStatistic().first()
-                if (redelivery && haveStartedRoute != null) {
+                if (args.isResume && haveStartedRoute != null) {
                     haveStartedRoute.id
                 } else {
                     if (haveStartedRoute != null) {
@@ -129,8 +129,7 @@ internal class NavigationService() : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val args = intent?.serializable<StartRouteArgs>(NAVIGATION_END_POINT)
         check(args != null) { "args is null" }
-        val isRedelivered = flags and START_FLAG_REDELIVERY != 0
-        startRoute(args, isRedelivered)
+        startRoute(args)
         println("TEST SERVICE onStartCommand $args")
         return START_REDELIVER_INTENT
     }

@@ -124,7 +124,7 @@ class NavigationFragment : Fragment(R.layout.navigation_fragment), OnMapReadyCal
                 startLocation: GeoPoint,
                 endLocation: GeoPoint
             ) {
-
+                println("location updated : start location: $startLocation, end location: $endLocation")
             }
 
             override fun onFailure(message: String) {
