@@ -109,7 +109,7 @@ internal class StatisticRepositoryImpl(
                     timestamp - statistic.startTime - allPausesTime
                 }
 
-            val currentSpeed = calculateSpeedKph(routePoints.takeLast(10))
+            val currentSpeed = calculateSpeedKph(routePoints.takeLast(2))
             statistic?.toModel(travelTime, currentSpeed)
 
         }
@@ -148,7 +148,7 @@ internal class StatisticRepositoryImpl(
                     .let { allPausesTime ->
                         timestamp - statistic.startTime - allPausesTime
                     }
-                val currentSpeed = calculateSpeedKph(statWithPoints.points.takeLast(10))
+                val currentSpeed = calculateSpeedKph(statWithPoints.points.takeLast(2))
                 statistic.toModel((travelTime / 1000) * 1000, currentSpeed)
             }
     }
