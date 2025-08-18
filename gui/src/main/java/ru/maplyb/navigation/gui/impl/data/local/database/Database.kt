@@ -14,7 +14,8 @@ internal object Database {
                         context.applicationContext,
                         NavigationDatabase::class.java,
                         "navigation_database.db"
-                    ).build()
+                    ).fallbackToDestructiveMigration()
+                        .build()
                 }
             }
         }
