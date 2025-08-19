@@ -57,6 +57,7 @@ publishing {
 dependencies {
     implementation(libs.ktor.core)
     implementation(libs.ktor.client.okhttp)
+    implementation(libs.ktor.client.logging)
     implementation(libs.datastore)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.gson)

@@ -25,6 +25,7 @@ ktor = "3.2.3"
 [libraries]
 ktor-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
 ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
+ktor-client-logging = { module = "io.ktor:ktor-client-logging", version.ref = "ktor" }
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinx-serialization-json"}
 gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
 room = { group = "androidx.room", name = "room-runtime", version.ref = "room" }

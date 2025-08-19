@@ -31,9 +31,6 @@ import ru.maplyb.navigation.gui.api.MaplybNavigationApi
 import ru.maplyb.navigation.gui.api.NavigationLocationListener
 import ru.maplyb.navigation.gui.api.model.GeoPoint
 import ru.maplyb.navigation.gui.api.model.RouteStatistic
-import ru.maplyb.navigation.gui.impl.data.local.database.Database
-import ru.maplyb.navigation.gui.impl.data.local.entity.RemoteRouteEntity
-import ru.maplyb.navigation.gui.impl.data.local.entity.RemoteRoutePointEntity
 import ru.maplyb.navigation.gui.impl.data.local.model.PositionDataModel
 import ru.maplyb.navigation.gui.impl.data.remote.repository.RemoteRouteRepository
 import ru.maplyb.navigation.gui.impl.domain.model.StartRouteArgs
@@ -45,8 +42,6 @@ import ru.maplyb.navigation.gui.impl.presentation.location.LibLocationManager
 import ru.maplyb.navigation.gui.impl.presentation.main.MainBottomScaffold
 import ru.maplyb.navigation.gui.impl.service.NavigationService
 import ru.maplyb.navigation.gui.impl.service.NotificationChannel
-import kotlinx.serialization.json.Json
-import ru.maplyb.navigation.gui.impl.data.local.model.PositionDataModel
 
 internal object MaplybNavigationApiImpl : MaplybNavigationApi {
 
