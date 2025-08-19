@@ -7,6 +7,11 @@ import ru.maplyb.navigation.gui.impl.data.local.entity.RemoteRouteEntity
 import ru.maplyb.navigation.gui.impl.data.local.entity.RemoteRoutePointEntity
 import ru.maplyb.navigation.gui.impl.data.remote.api.OpenStreetMapRoutingApi
 import ru.maplyb.navigation.gui.impl.data.remote.model.osrm.OsrmRouteResponse
+import kotlin.math.cos
+import kotlin.math.max
+import kotlin.math.min
+import kotlin.math.pow
+import kotlin.math.sqrt
 
 internal class RemoteRouteRepositoryImpl(
 	private val routingApi: OpenStreetMapRoutingApi,
@@ -14,6 +19,78 @@ internal class RemoteRouteRepositoryImpl(
 ) : RemoteRouteRepository {
 
 	private val json: Json = Json { ignoreUnknownKeys = true }
+
+	private fun rdpSimplify(
+		coordinates: List<List<Double>>,
+		epsilonMeters: Double = 2.0
+	): List<List<Double>> {
+		if (coordinates.size <= 2) return coordinates
+
+		fun perpendicularDistanceMeters(
+			aLon: Double, aLat: Double,
+			bLon: Double, bLat: Double,
+			pLon: Double, pLat: Double
+		): Double {
+			val lat0 = (aLat + bLat) / 2.0
+			val metersPerLat = 111_320.0
+			val metersPerLon = 111_320.0 * cos(Math.toRadians(lat0))
+			val ax = 0.0
+			val ay = 0.0
+			val bx = (bLon - aLon) * metersPerLon
+			val by = (bLat - aLat) * metersPerLat
+			val px = (pLon - aLon) * metersPerLon
+			val py = (pLat - aLat) * metersPerLat
+
+			val abx = bx - ax
+			val aby = by - ay
+			val apx = px - ax
+			val apy = py - ay
+			val abLenSq = abx * abx + aby * aby
+			if (abLenSq == 0.0) {
+				return sqrt((px - ax).pow(2) + (py - ay).pow(2))
+			}
+			var t = (apx * abx + apy * aby) / abLenSq
+			t = max(0.0, min(1.0, t))
+			val projx = ax + t * abx
+			val projy = ay + t * aby
+			return sqrt((px - projx).pow(2) + (py - projy).pow(2))
+		}
+
+		fun rdp(start: Int, end: Int, out: MutableList<List<Double>>) {
+			var maxDist = -1.0
+			var index = -1
+			val a = coordinates[start]
+			val b = coordinates[end]
+			val aLon = a.getOrNull(0) ?: return
+			val aLat = a.getOrNull(1) ?: return
+			val bLon = b.getOrNull(0) ?: return
+			val bLat = b.getOrNull(1) ?: return
+
+			for (i in start + 1 until end) {
+				val p = coordinates[i]
+				val pLon = p.getOrNull(0) ?: continue
+				val pLat = p.getOrNull(1) ?: continue
+				val d = perpendicularDistanceMeters(aLon, aLat, bLon, bLat, pLon, pLat)
+				if (d > maxDist) {
+					maxDist = d
+					index = i
+				}
+			}
+
+			if (maxDist > epsilonMeters && index != -1) {
+				rdp(start, index, out)
+				out.removeLast()
+				rdp(index, end, out)
+			} else {
+				out.add(a)
+				out.add(b)
+			}
+		}
+
+		val result = mutableListOf<List<Double>>()
+		rdp(0, coordinates.lastIndex, result)
+		return result
+	}
 
 	override suspend fun fetchAndSaveRoute(
 		lon1: Double,
@@ -51,7 +128,8 @@ internal class RemoteRouteRepositoryImpl(
 		)
 
 		val coordinates = route.geometry?.coordinates.orEmpty()
-		val points = coordinates.mapIndexed { index, lonLat ->
+		val simplified = rdpSimplify(coordinates, epsilonMeters = 2.0)
+		val points = simplified.mapIndexed { index, lonLat ->
 			val lon = lonLat.getOrNull(0) ?: 0.0
 			val lat = lonLat.getOrNull(1) ?: 0.0
 			RemoteRoutePointEntity(
@@ -61,6 +139,6 @@ internal class RemoteRouteRepositoryImpl(
 			)
 		}
 
-		return remoteRouteDao.insertRouteWithPoints(routeEntity, points)
+		return remoteRouteDao.replaceAllWithRoute(routeEntity, points)
 	}
 } 

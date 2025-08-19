@@ -21,6 +21,12 @@ internal interface RemoteRouteDao {
 	@Query("SELECT * FROM RemoteRoutePointEntity WHERE routeId = :routeId ORDER BY orderIndex ASC")
 	suspend fun getRoutePoints(routeId: Long): List<RemoteRoutePointEntity>
 
+	@Query("DELETE FROM RemoteRoutePointEntity")
+	suspend fun clearPoints()
+
+	@Query("DELETE FROM RemoteRouteEntity")
+	suspend fun clearRoutes()
+
 	@Transaction
 	suspend fun insertRouteWithPoints(route: RemoteRouteEntity, points: List<RemoteRoutePointEntity>): Long {
 		val id = insertRoute(route)
@@ -28,5 +34,12 @@ internal interface RemoteRouteDao {
 			insertRoutePoints(points.map { it.copy(routeId = id) })
 		}
 		return id
+	}
+
+	@Transaction
+	suspend fun replaceAllWithRoute(route: RemoteRouteEntity, points: List<RemoteRoutePointEntity>): Long {
+		clearPoints()
+		clearRoutes()
+		return insertRouteWithPoints(route, points)
 	}
 } 
