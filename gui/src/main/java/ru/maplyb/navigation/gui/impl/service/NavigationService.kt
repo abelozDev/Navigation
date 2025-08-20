@@ -111,7 +111,6 @@ internal class NavigationService() : Service() {
 									),
 									endLocation = args.endPoint
 								)
-
 							}
 							.onFailure {
 								locationListener?.onFailure(it.message ?: "Геолокация недоступна")
@@ -127,7 +126,8 @@ internal class NavigationService() : Service() {
 			val remotePoints = database.remoteRouteDao().getRoutePoints(args.routeId)
 			check(remoteRoute != null && remotePoints.isNotEmpty()) { "Saved route not found or has no points" }
 
-			val finalEndPoint = remoteRoute.endPoint
+			val initialIndex = if (remotePoints.size > 1) 1 else 0
+			val initialTarget = remotePoints[initialIndex].point
 
 			statisticId = if (args.statisticId == null) {
 				val haveStartedRoute = repository.getLastStatistic().first()
@@ -144,11 +144,12 @@ internal class NavigationService() : Service() {
 							altitude = it.altitude
 						)
 					}
-					repository.createEmptyStatistic(lastKnowLocation, finalEndPoint).id
+					repository.createEmptyStatistic(lastKnowLocation, initialTarget).id
 				}
 			} else args.statisticId
 
-			var currentTargetIndex = 0
+			var currentTargetIndex = initialIndex
+			println("POINTSTEST remote points $remotePoints")
 			withContext(Dispatchers.Main) {
 				locationManager
 					.init()
@@ -157,11 +158,6 @@ internal class NavigationService() : Service() {
 						check(statisticId != null) { "statistic id is null" }
 						location
 							.onSuccess {
-								repository.updateLastPosition(
-									statisticId!!,
-									it.toGeoPoint()
-								)
-
 								val target = remotePoints[currentTargetIndex].point
 								val distance = distanceInMeters(
 									lat1 = it.latitude,
@@ -172,12 +168,20 @@ internal class NavigationService() : Service() {
 								if (distance <= 15) {
 									if (currentTargetIndex < remotePoints.lastIndex) {
 										currentTargetIndex++
+										val currentTarget = remotePoints[currentTargetIndex].point
+										println("POINTSTEST current target $currentTarget")
+										repository.updateEndPoint(statisticId!!, currentTarget)
 									} else {
 										repository.finishStatistic(statisticId!!)
 										stopServiceFromClient()
 										return@collect
 									}
 								}
+
+								repository.updateLastPosition(
+									statisticId!!,
+									it.toGeoPoint()
+								)
 
 								val dynamicEnd = remotePoints[currentTargetIndex].point
 								locationListener?.locationUpdated(

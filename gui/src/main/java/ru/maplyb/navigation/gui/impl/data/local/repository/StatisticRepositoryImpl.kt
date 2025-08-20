@@ -226,6 +226,13 @@ internal class StatisticRepositoryImpl(
         setLifecycle(statisticId, StatisticLifecycle.END)
     }
 
+    override suspend fun updateEndPoint(statisticId: Int, endPoint: GeoPoint) {
+        val statistic = database.statisticDao().getById(statisticId.toLong()) ?: return
+        database.statisticDao().updateStatistic(
+            statistic.copy(endPoint = endPoint)
+        )
+    }
+
     private suspend fun updateStatistic(statistic: StatisticEntity, geoPoint: GeoPoint) {
         /**Может быть null если удалили статистику, но пришла геолокации.
          * Если lifecycle = FORCE_PAUSE, не учитываем обновление*/

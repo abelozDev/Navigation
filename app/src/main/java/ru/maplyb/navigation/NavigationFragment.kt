@@ -103,7 +103,6 @@ class NavigationFragment : Fragment(R.layout.navigation_fragment), OnMapReadyCal
 
     fun initViews() {
         resumeButton.setOnClickListener {
-
             navigationLib.startRouteByOsrm(
                 GeoPoint(51.934680, 38.515892, 0.0)
             )

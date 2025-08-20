@@ -79,6 +79,7 @@ internal class RemoteRouteRepositoryImpl(
 
 			if (maxDist > epsilonMeters && index != -1) {
 				rdp(start, index, out)
+				//todo
 				out.removeLast()
 				rdp(index, end, out)
 			} else {
@@ -113,11 +114,20 @@ internal class RemoteRouteRepositoryImpl(
 		val route = response.routes.firstOrNull()
 			?: throw IllegalStateException("OSRM returned no routes")
 
+		val coordinates = route.geometry?.coordinates.orEmpty()
+		val startPoint = coordinates.firstOrNull()?.let { first ->
+			val lon = first.getOrNull(0) ?: lon1
+			val lat = first.getOrNull(1) ?: lat1
+			GeoPoint(latitude = lat, longitude = lon, altitude = 0.0)
+		} ?: GeoPoint(latitude = lat1, longitude = lon1, altitude = 0.0)
+		val endPoint = coordinates.lastOrNull()?.let { last ->
+			val lon = last.getOrNull(0) ?: lon2
+			val lat = last.getOrNull(1) ?: lat2
+			GeoPoint(latitude = lat, longitude = lon, altitude = 0.0)
+		} ?: GeoPoint(latitude = lat2, longitude = lon2, altitude = 0.0)
+
 		val distanceMeters = route.distance.toInt()
 		val durationSeconds = route.duration
-
-		val startPoint = GeoPoint(latitude = lat1, longitude = lon1, altitude = 0.0)
-		val endPoint = GeoPoint(latitude = lat2, longitude = lon2, altitude = 0.0)
 
 		val routeEntity = RemoteRouteEntity(
 			createdAt = System.currentTimeMillis(),
@@ -127,7 +137,6 @@ internal class RemoteRouteRepositoryImpl(
 			durationSeconds = durationSeconds
 		)
 
-		val coordinates = route.geometry?.coordinates.orEmpty()
 		val simplified = rdpSimplify(coordinates, epsilonMeters = 2.0)
 		val points = simplified.mapIndexed { index, lonLat ->
 			val lon = lonLat.getOrNull(0) ?: 0.0
