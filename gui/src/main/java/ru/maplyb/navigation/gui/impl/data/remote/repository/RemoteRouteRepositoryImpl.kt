@@ -1,12 +1,15 @@
 package ru.maplyb.navigation.gui.impl.data.remote.repository
 
+import kotlinx.coroutines.flow.first
 import kotlinx.serialization.json.Json
 import ru.maplyb.navigation.gui.api.model.GeoPoint
+import ru.maplyb.navigation.gui.api.model.RouteType
 import ru.maplyb.navigation.gui.impl.data.local.dao.RemoteRouteDao
 import ru.maplyb.navigation.gui.impl.data.local.entity.RemoteRouteEntity
 import ru.maplyb.navigation.gui.impl.data.local.entity.RemoteRoutePointEntity
 import ru.maplyb.navigation.gui.impl.data.remote.api.OpenStreetMapRoutingApi
 import ru.maplyb.navigation.gui.impl.data.remote.model.osrm.OsrmRouteResponse
+import ru.maplyb.navigation.gui.impl.domain.data_source.DataStoreSource
 import kotlin.math.cos
 import kotlin.math.max
 import kotlin.math.min
@@ -15,7 +18,8 @@ import kotlin.math.sqrt
 
 internal class RemoteRouteRepositoryImpl(
 	private val routingApi: OpenStreetMapRoutingApi,
-	private val remoteRouteDao: RemoteRouteDao
+	private val remoteRouteDao: RemoteRouteDao,
+	private val datastore: DataStoreSource
 ) : RemoteRouteRepository {
 
 	private val json: Json = Json { ignoreUnknownKeys = true }
@@ -109,6 +113,49 @@ internal class RemoteRouteRepositoryImpl(
 			geometries = "geojson"
 		)
 
+		return saveRouteFromResponse(responseString, lon1, lat1, lon2, lat2)
+	}
+
+	override suspend fun fetchAndSavePedestrianRoute(
+		lon1: Double,
+		lat1: Double,
+		lon2: Double,
+		lat2: Double
+	): Long {
+		val responseString = routingApi.getPedestrianRoute(
+			lon1 = lon1,
+			lat1 = lat1,
+			lon2 = lon2,
+			lat2 = lat2,
+			alternatives = false,
+			overview = "full",
+			steps = false,
+			geometries = "geojson"
+		)
+
+		return saveRouteFromResponse(responseString, lon1, lat1, lon2, lat2)
+	}
+
+	override suspend fun fetchAndSaveRouteByCurrentType(
+		lon1: Double,
+		lat1: Double,
+		lon2: Double,
+		lat2: Double
+	): Long {
+		val currentRouteType = datastore.getRouteType().first()
+		return when (currentRouteType) {
+			RouteType.CAR -> fetchAndSaveRoute(lon1, lat1, lon2, lat2)
+			RouteType.FOOT -> fetchAndSavePedestrianRoute(lon1, lat1, lon2, lat2)
+		}
+	}
+
+	private suspend fun saveRouteFromResponse(
+		responseString: String,
+		lon1: Double,
+		lat1: Double,
+		lon2: Double,
+		lat2: Double
+	): Long {
 		val response = json.decodeFromString<OsrmRouteResponse>(responseString)
 		val route = response.routes.firstOrNull()
 			?: throw IllegalStateException("OSRM returned no routes")
@@ -123,7 +170,7 @@ internal class RemoteRouteRepositoryImpl(
 			val lon = last.getOrNull(0) ?: lon2
 			val lat = last.getOrNull(1) ?: lat2
 			GeoPoint(latitude = lat, longitude = lon, altitude = 0.0)
-		} ?: GeoPoint(latitude = lon2, longitude = lat2, altitude = 0.0)
+		} ?: GeoPoint(latitude = lat2, longitude = lon2, altitude = 0.0)
 
 		val distanceMeters = route.distance.toInt()
 		val durationSeconds = route.duration

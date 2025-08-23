@@ -1,40 +1,52 @@
 package ru.maplyb.navigation.gui.impl.data.datastore
 
-import android.app.Application
 import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import ru.maplyb.navigation.gui.api.model.RouteType
 import ru.maplyb.navigation.gui.impl.domain.data_source.DataStoreSource
 
+private val Context.datastore: DataStore<Preferences> by preferencesDataStore(name = "navigation_prefs")
 
-internal object DataStoreSourceImpl : DataStoreSource {
+internal class DataStoreSourceImpl(private val context: Context) : DataStoreSource {
 
-    private lateinit var context: Application
+	private val pauseStateKey = booleanPreferencesKey("pause_state")
+	private val routeTypeKey = intPreferencesKey("route_type")
 
-    private val PAUSE_STATE_KEY = booleanPreferencesKey("PAUSE_STATE_KEY")
+	override fun isPauseEnabled(): Flow<Boolean> {
+		return context.datastore.data.map { preferences ->
+			preferences[pauseStateKey] ?: false
+		}
+	}
 
-    private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "navigation_lib_datastore")
+	override suspend fun savePauseState(state: Boolean) {
+		context.datastore.edit { preferences ->
+			preferences[pauseStateKey] = state
+		}
+	}
 
-    fun init(context: Application): DataStoreSource {
-        this.context = context
-        return this
-    }
+	override fun getRouteType(): Flow<RouteType> {
+		return context.datastore.data.map { preferences ->
+			val typeOrdinal = preferences[routeTypeKey] ?: RouteType.FOOT.ordinal
+			RouteType.entries[typeOrdinal]
+		}
+	}
 
-    override suspend fun savePauseState(state: Boolean) {
-        context.dataStore.edit { prefs ->
-            prefs[PAUSE_STATE_KEY] = state
-        }
-    }
+	override suspend fun saveRouteType(routeType: RouteType) {
+		context.datastore.edit { preferences ->
+			preferences[routeTypeKey] = routeType.ordinal
+		}
+	}
 
-    override fun isPauseEnabled(): Flow<Boolean> {
-        return context.dataStore.data.map {
-            it[PAUSE_STATE_KEY] ?: false
-        }
-    }
-
+	companion object {
+		fun create(context: Context): DataStoreSource {
+			return DataStoreSourceImpl(context)
+		}
+	}
 }

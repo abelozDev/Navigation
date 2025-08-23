@@ -24,6 +24,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -33,6 +34,8 @@ import ru.maplyb.navigation.gui.api.model.GeoPoint
 import ru.maplyb.navigation.gui.api.model.RouteStatistic
 import ru.maplyb.navigation.gui.impl.data.local.model.PositionDataModel
 import ru.maplyb.navigation.gui.impl.data.remote.repository.RemoteRouteRepository
+import ru.maplyb.navigation.gui.impl.domain.data_source.DataStoreSource
+import ru.maplyb.navigation.gui.api.model.RouteType
 import ru.maplyb.navigation.gui.impl.domain.model.StartRouteArgs
 import ru.maplyb.navigation.gui.impl.domain.model.StartRouteByPointsArgs
 import ru.maplyb.navigation.gui.impl.domain.model.StatisticLifecycle
@@ -72,6 +75,7 @@ internal object MaplybNavigationApiImpl : MaplybNavigationApi {
 	private lateinit var scope: CoroutineScope
 	private lateinit var repository: StatisticRepository
 	private lateinit var remoteRouteRepository: RemoteRouteRepository
+	private lateinit var datastore: DataStoreSource
 	private val statisticVisibility: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
 	override fun init(activity: Activity) {
@@ -79,6 +83,7 @@ internal object MaplybNavigationApiImpl : MaplybNavigationApi {
 		scope = CoroutineScope(Dispatchers.Default)
 		repository = StatisticRepository.create(activity.application)
 		remoteRouteRepository = RemoteRouteRepository.create(activity.application)
+		datastore = DataStoreSource.create(activity.application)
 	}
 
 	override fun setLocationListener(locationListener: NavigationLocationListener) {
@@ -239,7 +244,7 @@ internal object MaplybNavigationApiImpl : MaplybNavigationApi {
 		scope.launch {
 			val lastKnown = LibLocationManager.create(application).getLastKnownLocation()
 				?: return@launch
-			val routeId = remoteRouteRepository.fetchAndSaveRoute(
+			val routeId = remoteRouteRepository.fetchAndSaveRouteByCurrentType(
 				lon1 = lastKnown.longitude,
 				lat1 = lastKnown.latitude,
 				lon2 = endPoint.longitude,
@@ -247,6 +252,22 @@ internal object MaplybNavigationApiImpl : MaplybNavigationApi {
 			)
 			startServiceByPoints(StartRouteByPointsArgs(routeId, null))
 			show()
+		}
+	}
+
+	override fun setRouteType(routeType: RouteType) {
+		scope.launch {
+			datastore.saveRouteType(routeType)
+		}
+	}
+
+	/**
+	 * Get route type asynchronously - preferred method
+	 */
+	override fun getRouteTypeAsync(callback: (RouteType) -> Unit) {
+		scope.launch {
+			val routeType = datastore.getRouteType().first()
+			callback(routeType)
 		}
 	}
 

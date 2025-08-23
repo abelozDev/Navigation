@@ -24,7 +24,27 @@ internal class OpenStreetMapRoutingApiImpl(
 		geometries: String
 	): String {
 		val segment = "${formatCoord(lon1)},${formatCoord(lat1)};${formatCoord(lon2)},${formatCoord(lat2)}"
-		val url = "${OpenStreetMapRoutingHttpClient.BASE_URL}/$segment"
+		val url = "${OpenStreetMapRoutingHttpClient.BASE_URL}/${OpenStreetMapRoutingHttpClient.CAR_PROFILE}/$segment"
+		return httpClient.get(url) {
+			parameter("alternatives", alternatives)
+			parameter("overview", overview)
+			parameter("steps", steps)
+			parameter("geometries", geometries)
+		}.body<String>()
+	}
+
+	override suspend fun getPedestrianRoute(
+		lon1: Double,
+		lat1: Double,
+		lon2: Double,
+		lat2: Double,
+		alternatives: Boolean,
+		overview: String,
+		steps: Boolean,
+		geometries: String
+	): String {
+		val segment = "${formatCoord(lon1)},${formatCoord(lat1)};${formatCoord(lon2)},${formatCoord(lat2)}"
+		val url = "${OpenStreetMapRoutingHttpClient.BASE_URL}/${OpenStreetMapRoutingHttpClient.FOOT_PROFILE}/$segment"
 		return httpClient.get(url) {
 			parameter("alternatives", alternatives)
 			parameter("overview", overview)

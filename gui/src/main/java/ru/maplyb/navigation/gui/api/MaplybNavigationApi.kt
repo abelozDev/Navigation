@@ -5,6 +5,7 @@ import androidx.compose.runtime.Composable
 import ru.maplyb.navigation.gui.api.model.GeoPoint
 import ru.maplyb.navigation.gui.api.model.RouteStatistic
 import ru.maplyb.navigation.gui.impl.MaplybNavigationApiImpl
+import ru.maplyb.navigation.gui.api.model.RouteType
 
 public interface MaplybNavigationApi {
 
@@ -61,6 +62,13 @@ public interface MaplybNavigationApi {
 	 * Построить маршрут до точки через OSRM, сохранить в БД и запустить навигацию по точкам
 	 */
 	public fun startRouteByOsrm(endPoint: GeoPoint): Unit
+
+	public fun getRouteTypeAsync(callback: (RouteType) -> Unit)
+
+	/**
+	 * Установить тип маршрута
+	 */
+	public fun setRouteType(routeType: RouteType): Unit
 
 	public companion object {
 		public fun create(): MaplybNavigationApi = MaplybNavigationApiImpl
