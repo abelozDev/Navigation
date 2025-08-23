@@ -79,8 +79,7 @@ internal class RemoteRouteRepositoryImpl(
 
 			if (maxDist > epsilonMeters && index != -1) {
 				rdp(start, index, out)
-				//todo
-				out.removeLast()
+				out.removeAt(out.lastIndex)
 				rdp(index, end, out)
 			} else {
 				out.add(a)
@@ -124,7 +123,7 @@ internal class RemoteRouteRepositoryImpl(
 			val lon = last.getOrNull(0) ?: lon2
 			val lat = last.getOrNull(1) ?: lat2
 			GeoPoint(latitude = lat, longitude = lon, altitude = 0.0)
-		} ?: GeoPoint(latitude = lat2, longitude = lon2, altitude = 0.0)
+		} ?: GeoPoint(latitude = lon2, longitude = lat2, altitude = 0.0)
 
 		val distanceMeters = route.distance.toInt()
 		val durationSeconds = route.duration

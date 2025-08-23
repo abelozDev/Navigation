@@ -42,11 +42,7 @@ private object LibLocationManagerImpl : LibLocationManager {
         if (!::application.isInitialized || !::locationManager.isInitialized) {
             this.application = application
             locationManager = application.getSystemService(Context.LOCATION_SERVICE) as LocationManager
-            provider = when {
-                locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) -> LocationManager.GPS_PROVIDER
-                locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER) -> LocationManager.NETWORK_PROVIDER
-                else -> null
-            }
+            initProvider()
         }
         return this
     }
@@ -72,6 +68,7 @@ private object LibLocationManagerImpl : LibLocationManager {
         val onLocationUpdated = LocationListener { location ->
             trySend(Result.success(location))
         }
+        initProvider()
         val currentProvider = provider
         if (currentProvider == null) {
             close()
@@ -89,6 +86,15 @@ private object LibLocationManagerImpl : LibLocationManager {
         )
         awaitClose {
             locationManager.removeUpdates(onLocationUpdated)
+        }
+    }
+
+    private fun initProvider() {
+        if (provider != null) return
+        provider = when {
+            locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) -> LocationManager.GPS_PROVIDER
+            locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER) -> LocationManager.NETWORK_PROVIDER
+            else -> null
         }
     }
 }
