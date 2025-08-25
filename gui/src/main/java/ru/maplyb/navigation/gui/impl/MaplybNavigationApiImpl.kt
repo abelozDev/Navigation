@@ -235,11 +235,6 @@ internal object MaplybNavigationApiImpl : MaplybNavigationApi {
 		startService(StartRouteArgs(endPoint, null))
 	}
 
-	override fun startRouteByRouteId(routeId: Long) {
-		startServiceByPoints(StartRouteByPointsArgs(routeId, null))
-		show()
-	}
-
 	override fun startRouteByOsrm(endPoint: GeoPoint) {
 		scope.launch {
 			val lastKnown = LibLocationManager.create(application).getLastKnownLocation()

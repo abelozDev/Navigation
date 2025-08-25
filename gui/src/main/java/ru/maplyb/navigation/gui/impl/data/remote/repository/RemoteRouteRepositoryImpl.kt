@@ -113,7 +113,7 @@ internal class RemoteRouteRepositoryImpl(
 			geometries = "geojson"
 		)
 
-		return saveRouteFromResponse(responseString, lon1, lat1, lon2, lat2)
+		return saveRouteFromResponse(responseString, lon1, lat1, lon2, lat2, RouteType.CAR)
 	}
 
 	override suspend fun fetchAndSavePedestrianRoute(
@@ -133,7 +133,7 @@ internal class RemoteRouteRepositoryImpl(
 			geometries = "geojson"
 		)
 
-		return saveRouteFromResponse(responseString, lon1, lat1, lon2, lat2)
+		return saveRouteFromResponse(responseString, lon1, lat1, lon2, lat2, RouteType.FOOT)
 	}
 
 	override suspend fun fetchAndSaveRouteByCurrentType(
@@ -154,7 +154,8 @@ internal class RemoteRouteRepositoryImpl(
 		lon1: Double,
 		lat1: Double,
 		lon2: Double,
-		lat2: Double
+		lat2: Double,
+		type: RouteType
 	): Long {
 		val response = json.decodeFromString<OsrmRouteResponse>(responseString)
 		val route = response.routes.firstOrNull()
@@ -180,7 +181,8 @@ internal class RemoteRouteRepositoryImpl(
 			startPoint = startPoint,
 			endPoint = endPoint,
 			distanceMeters = distanceMeters,
-			durationSeconds = durationSeconds
+			durationSeconds = durationSeconds,
+			type = type
 		)
 
 		val simplified = rdpSimplify(coordinates, epsilonMeters = 2.0)

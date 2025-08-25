@@ -53,13 +53,7 @@ public interface MaplybNavigationApi {
 	public fun startRoute(endPoint: GeoPoint): Unit
 
 	/**
-	 * Запустить навигацию по всем точкам сохраненного маршрута (OSRM geometry)
-	 * @param routeId id сохраненного маршрута в БД
-	 */
-	public fun startRouteByRouteId(routeId: Long): Unit
-
-	/**
-	 * Построить маршрут до точки через OSRM, сохранить в БД и запустить навигацию по точкам
+	 * Построить маршрут до точки через OSRM
 	 */
 	public fun startRouteByOsrm(endPoint: GeoPoint): Unit
 

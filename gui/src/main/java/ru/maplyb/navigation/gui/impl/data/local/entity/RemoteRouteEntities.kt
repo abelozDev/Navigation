@@ -4,6 +4,7 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
 import ru.maplyb.navigation.gui.api.model.GeoPoint
+import ru.maplyb.navigation.gui.api.model.RouteType
 
 @Entity
 internal data class RemoteRouteEntity(
@@ -13,7 +14,8 @@ internal data class RemoteRouteEntity(
 	val startPoint: GeoPoint,
 	val endPoint: GeoPoint,
 	val distanceMeters: Int,
-	val durationSeconds: Double
+	val durationSeconds: Double,
+	val type: RouteType
 )
 
 @Entity(
