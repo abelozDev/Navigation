@@ -133,7 +133,7 @@ class NavigationFragment : Fragment(R.layout.navigation_fragment), OnMapReadyCal
             }
 
             override fun onFailure(message: String) {
-
+                println("location updated: failure $message")
             }
         }
         )
