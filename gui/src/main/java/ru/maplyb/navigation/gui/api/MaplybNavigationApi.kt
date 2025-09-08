@@ -4,6 +4,7 @@ import android.app.Activity
 import androidx.compose.runtime.Composable
 import ru.maplyb.navigation.gui.api.model.GeoPoint
 import ru.maplyb.navigation.gui.api.model.RouteStatistic
+import ru.maplyb.navigation.gui.api.model.RoutePoints
 import ru.maplyb.navigation.gui.impl.MaplybNavigationApiImpl
 import ru.maplyb.navigation.gui.api.model.RouteType
 
@@ -63,6 +64,9 @@ public interface MaplybNavigationApi {
 	 * Установить тип маршрута
 	 */
 	public fun setRouteType(routeType: RouteType): Unit
+
+	public suspend fun createRoute(startLocation: GeoPoint, endLocation: GeoPoint, routeType: RouteType): Result<RoutePoints>
+	public suspend fun startRouteByPoints(points: List<GeoPoint>)
 
 	public companion object {
 		public fun create(): MaplybNavigationApi = MaplybNavigationApiImpl

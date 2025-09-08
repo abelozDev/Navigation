@@ -45,6 +45,8 @@ import ru.maplyb.navigation.gui.impl.presentation.location.LibLocationManager
 import ru.maplyb.navigation.gui.impl.presentation.main.MainBottomScaffold
 import ru.maplyb.navigation.gui.impl.service.NavigationService
 import ru.maplyb.navigation.gui.impl.service.NotificationChannel
+import ru.maplyb.navigation.gui.api.model.RoutePoints
+import kotlin.Result
 
 internal object MaplybNavigationApiImpl : MaplybNavigationApi {
 
@@ -264,6 +266,33 @@ internal object MaplybNavigationApiImpl : MaplybNavigationApi {
 			val routeType = datastore.getRouteType().first()
 			callback(routeType)
 		}
+	}
+
+	override suspend fun createRoute(startLocation: GeoPoint, endLocation: GeoPoint, routeType: RouteType): Result<RoutePoints> {
+		return try {
+			val result = remoteRouteRepository.getRoutePoints(
+				lon1 = startLocation.longitude,
+				lat1 = startLocation.latitude,
+				lon2 = endLocation.longitude,
+				lat2 = endLocation.latitude,
+				routeType = routeType
+			)
+			Result.success(result)
+		} catch (e: Exception) {
+			Result.failure(e)
+		}
+	}
+
+	override suspend fun startRouteByPoints(points: List<GeoPoint>) {
+		if (points.isEmpty()) {
+			throw IllegalArgumentException("Points list cannot be empty")
+		}
+
+		remoteRouteRepository.createRouteByPoints(points)
+		
+		val routeId = remoteRouteRepository.getLatestRouteId()
+
+		startServiceByPoints(StartRouteByPointsArgs(routeId, null))
 	}
 
 	private fun stopService() {

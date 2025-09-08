@@ -4,6 +4,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.serialization.json.Json
 import ru.maplyb.navigation.gui.api.model.GeoPoint
 import ru.maplyb.navigation.gui.api.model.RouteType
+import ru.maplyb.navigation.gui.api.model.RoutePoints
 import ru.maplyb.navigation.gui.impl.data.local.dao.RemoteRouteDao
 import ru.maplyb.navigation.gui.impl.data.local.entity.RemoteRouteEntity
 import ru.maplyb.navigation.gui.impl.data.local.entity.RemoteRoutePointEntity
@@ -197,5 +198,121 @@ internal class RemoteRouteRepositoryImpl(
 		}
 
 		return remoteRouteDao.replaceAllWithRoute(routeEntity, points)
+	}
+
+	override suspend fun createRouteByPoints(points: List<GeoPoint>) {
+		if (points.isEmpty()) {
+			throw IllegalArgumentException("Points list cannot be empty")
+		}
+
+		val startPoint = points.first()
+		val endPoint = points.last()
+		
+		val distanceMeters = calculateDistanceMeters(points)
+		val durationSeconds = calculateDurationSeconds(distanceMeters)
+
+		val routeEntity = RemoteRouteEntity(
+			createdAt = System.currentTimeMillis(),
+			startPoint = startPoint,
+			endPoint = endPoint,
+			distanceMeters = distanceMeters,
+			durationSeconds = durationSeconds.toDouble(),
+			type = RouteType.FOOT // Default to foot for custom routes
+		)
+
+		val routePoints = points.mapIndexed { index, point ->
+			RemoteRoutePointEntity(
+				routeId = 0, // filled in DAO transaction
+				point = point,
+				orderIndex = index
+			)
+		}
+
+		remoteRouteDao.replaceAllWithRoute(routeEntity, routePoints)
+	}
+
+	override suspend fun getLatestRouteId(): Long {
+		return remoteRouteDao.getLatestRouteId() 
+			?: throw IllegalStateException("No routes found in database")
+	}
+
+	override suspend fun getRoutePoints(
+		lon1: Double,
+		lat1: Double,
+		lon2: Double,
+		lat2: Double,
+		routeType: RouteType
+	): RoutePoints {
+		val responseString = when (routeType) {
+			RouteType.CAR -> routingApi.getRoute(
+				lon1 = lon1,
+				lat1 = lat1,
+				lon2 = lon2,
+				lat2 = lat2,
+				alternatives = false,
+				overview = "full",
+				steps = false,
+				geometries = "geojson"
+			)
+			RouteType.FOOT -> routingApi.getPedestrianRoute(
+				lon1 = lon1,
+				lat1 = lat1,
+				lon2 = lon2,
+				lat2 = lat2,
+				alternatives = false,
+				overview = "full",
+				steps = false,
+				geometries = "geojson"
+			)
+		}
+
+		val response = json.decodeFromString<OsrmRouteResponse>(responseString)
+		val route = response.routes.firstOrNull()
+			?: throw IllegalStateException("OSRM returned no routes")
+
+		val coordinates = route.geometry?.coordinates.orEmpty()
+		val simplified = rdpSimplify(coordinates, epsilonMeters = 2.0)
+		
+		val points = simplified.map { lonLat ->
+			val lon = lonLat.getOrNull(0) ?: 0.0
+			val lat = lonLat.getOrNull(1) ?: 0.0
+			GeoPoint(latitude = lat, longitude = lon, altitude = 0.0)
+		}
+
+		return RoutePoints(points = points)
+	}
+
+	private fun calculateDistanceMeters(points: List<GeoPoint>): Int {
+		if (points.size < 2) return 0
+		
+		var totalDistance = 0.0
+		for (i in 0 until points.size - 1) {
+			totalDistance += calculateDistanceBetweenPoints(points[i], points[i + 1])
+		}
+		return totalDistance.toInt()
+	}
+
+	private fun calculateDistanceBetweenPoints(point1: GeoPoint, point2: GeoPoint): Double {
+		val lat1 = Math.toRadians(point1.latitude)
+		val lon1 = Math.toRadians(point1.longitude)
+		val lat2 = Math.toRadians(point2.latitude)
+		val lon2 = Math.toRadians(point2.longitude)
+
+		val dlat = lat2 - lat1
+		val dlon = lon2 - lon1
+
+		val a = kotlin.math.sin(dlat / 2).pow(2) + 
+			kotlin.math.cos(lat1) * kotlin.math.cos(lat2) * kotlin.math.sin(dlon / 2).pow(2)
+		val c = 2 * kotlin.math.asin(kotlin.math.sqrt(a))
+
+		// Earth's radius in meters
+		val earthRadius = 6371000.0
+		return earthRadius * c
+	}
+
+	private fun calculateDurationSeconds(distanceMeters: Int): Int {
+		// Assume average walking speed of 1.4 m/s (5 km/h)
+		val averageSpeedMetersPerSecond = 1.4
+		return (distanceMeters / averageSpeedMetersPerSecond).toInt()
 	}
 } 

@@ -27,6 +27,9 @@ internal interface RemoteRouteDao {
 	@Query("DELETE FROM RemoteRouteEntity")
 	suspend fun clearRoutes()
 
+	@Query("SELECT id FROM RemoteRouteEntity ORDER BY createdAt DESC LIMIT 1")
+	suspend fun getLatestRouteId(): Long?
+
 	@Transaction
 	suspend fun insertRouteWithPoints(route: RemoteRouteEntity, points: List<RemoteRoutePointEntity>): Long {
 		val id = insertRoute(route)
