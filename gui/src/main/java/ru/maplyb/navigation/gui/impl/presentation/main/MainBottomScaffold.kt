@@ -51,6 +51,7 @@ internal fun MainBottomScaffold(
         sheetShape = RoundedCornerShape(topEnd = 16.dp, topStart = 16.dp),
         sheetTonalElevation = 0.dp,
         sheetContainerColor = Color(0xff2C2A2A),
+        containerColor = Color.Transparent,
         sheetDragHandle = null,
         sheetPeekHeight = sheetContentHeight,
         sheetContent = {
